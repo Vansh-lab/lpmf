@@ -16,6 +16,7 @@ from lpmf.clean.load_clean import (
     IMPUTE_TOD_MEDIAN,
     clean_load,
     fill_gaps,
+    resample_blocks,
 )
 
 
@@ -117,3 +118,23 @@ def test_full_clean_load_no_dst_anomalies():
         cleaned["ts_ist"].min(), cleaned["ts_ist"].max(), freq="5min", tz="Asia/Kolkata"
     )
     assert len(full_grid) == len(cleaned)
+
+
+def test_resample_blocks_hourly_has_block_and_impute_method():
+    # Regression test: the hourly frame used to be missing `block` and
+    # `impute_method` entirely, which the final schema requires for both
+    # the 15-min and hourly outputs — caught running the real pipeline.
+    df = _make_regular_frame(n_days=2)
+    df["is_outlier"] = False
+    df["imputed"] = False
+    df["impute_method"] = IMPUTE_NONE
+
+    fifteen, hourly = resample_blocks(df)
+
+    for frame in (fifteen, hourly):
+        assert "block" in frame.columns
+        assert "impute_method" in frame.columns
+        assert frame["block"].between(1, 96).all()
+
+    # Hourly block is the 15-min block of that hour's first slot: 1, 5, 9, ...
+    assert set(hourly["block"].unique()) <= set(range(1, 97, 4))

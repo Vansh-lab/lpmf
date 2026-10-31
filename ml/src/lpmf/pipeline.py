@@ -74,7 +74,7 @@ def step_join(cleaned: pd.DataFrame | None = None) -> tuple[pd.DataFrame, pd.Dat
     end = cleaned["ts_ist"].max().date()
     calendar_df = build_calendar(start, end)
 
-    weather_result = fetch_weather(start.year, end.year)
+    weather_result = fetch_weather(start, end)
 
     fifteen_joined = build_joined_frame(fifteen, weather_result.frame, calendar_df)
     hourly_joined = build_joined_frame(hourly, weather_result.frame, calendar_df)
@@ -102,9 +102,13 @@ def step_split(fifteen: pd.DataFrame | None = None) -> None:
 
 
 def step_qa() -> None:
-    df_5min = pd.read_parquet(DATA_INTERIM / "delhi_5min_clean.parquet")
+    # "Before imputation" must be the actual raw ingest, not the already
+    # gap-filled 5-min frame — using the cleaned frame here understated
+    # missingness (it only showed the irreparable long-gap leftovers,
+    # not everything imputation actually had to fix).
+    df_5min_raw = pd.read_parquet(DATA_INTERIM / "delhi_5min_raw.parquet")
     df_15min = pd.read_parquet(DATA_PROCESSED / "delhi_15min.parquet")
-    generate_qa_report(df_5min, df_15min)
+    generate_qa_report(df_5min_raw, df_15min)
 
 
 def main(argv: list[str] | None = None) -> None:

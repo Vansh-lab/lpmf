@@ -3,6 +3,12 @@
 Location: lat 28.6139, lon 77.2090 (Delhi / Connaught Place reference point).
 No API key required. Responses are cached to data/raw/weather/ as parquet,
 chunked by calendar year, so repeated pipeline runs do not re-hit the API.
+
+The Archive API only serves dates up to "today" (it rejects a future
+end_date with a 400), so this module takes an explicit [start_date,
+end_date] rather than whole years and clips each calendar-year chunk to
+that range — a naive "fetch through Dec 31 of the end year" breaks the
+moment the end year is the current, not-yet-complete year.
 """
 
 from __future__ import annotations
@@ -37,13 +43,18 @@ class WeatherFetchResult:
     fetched_years: list[int]
 
 
-def _cache_path(cache_dir: Path, year: int) -> Path:
+def _full_year_cache_path(cache_dir: Path, year: int) -> Path:
     return cache_dir / f"weather_{year}.parquet"
 
 
-def _fetch_year(year: int, timeout: int = 60) -> pd.DataFrame:
-    start = date(year, 1, 1)
-    end = date(year, 12, 31)
+def _partial_cache_path(cache_dir: Path, start: date, end: date) -> Path:
+    # Deliberately NOT named weather_<year>.parquet: a partial-year chunk
+    # must never be mistaken for (or silently reused as) a complete year,
+    # which would quietly leave a later wider request missing days.
+    return cache_dir / f"weather_partial_{start.isoformat()}_{end.isoformat()}.parquet"
+
+
+def _fetch_range(start: date, end: date, timeout: int = 60) -> pd.DataFrame:
     params = {
         "latitude": LAT,
         "longitude": LON,
@@ -57,7 +68,9 @@ def _fetch_year(year: int, timeout: int = 60) -> pd.DataFrame:
     payload = resp.json()
     hourly = payload.get("hourly", {})
     if not hourly or "time" not in hourly:
-        raise ValueError(f"Open-Meteo response for {year} missing 'hourly.time': {payload!r}")
+        raise ValueError(
+            f"Open-Meteo response for {start}..{end} missing 'hourly.time': {payload!r}"
+        )
 
     df = pd.DataFrame({"ts_ist": pd.to_datetime(hourly["time"])})
     for var in HOURLY_VARS:
@@ -67,14 +80,20 @@ def _fetch_year(year: int, timeout: int = 60) -> pd.DataFrame:
 
 
 def fetch_weather(
-    start_year: int,
-    end_year: int,
+    start_date: date,
+    end_date: date,
     cache_dir: str | Path = "data/raw/weather",
     force_refresh: bool = False,
 ) -> WeatherFetchResult:
-    """Fetch (or load from cache) hourly weather for every year in
-    [start_year, end_year] inclusive, concatenated and sorted by ts_ist.
+    """Fetch (or load from cache) hourly weather for [start_date, end_date]
+    inclusive, concatenated and sorted by ts_ist. Chunked by calendar year
+    internally; only a chunk that is a *complete* calendar year within the
+    requested range is cached under the plain weather_<year>.parquet name,
+    so a partial first/last year is never mistaken for a full one later.
     """
+    if end_date < start_date:
+        raise ValueError(f"end_date {end_date} is before start_date {start_date}")
+
     cache_path_dir = Path(cache_dir)
     cache_path_dir.mkdir(parents=True, exist_ok=True)
 
@@ -82,14 +101,23 @@ def fetch_weather(
     cached_years: list[int] = []
     fetched_years: list[int] = []
 
-    for year in range(start_year, end_year + 1):
-        cpath = _cache_path(cache_path_dir, year)
+    for year in range(start_date.year, end_date.year + 1):
+        chunk_start = max(date(year, 1, 1), start_date)
+        chunk_end = min(date(year, 12, 31), end_date)
+        is_full_year = chunk_start == date(year, 1, 1) and chunk_end == date(year, 12, 31)
+
+        cpath = (
+            _full_year_cache_path(cache_path_dir, year)
+            if is_full_year
+            else _partial_cache_path(cache_path_dir, chunk_start, chunk_end)
+        )
+
         if cpath.exists() and not force_refresh:
             frames.append(pd.read_parquet(cpath))
             cached_years.append(year)
             continue
 
-        df = _fetch_year(year)
+        df = _fetch_range(chunk_start, chunk_end)
         df.to_parquet(cpath, index=False)
         frames.append(df)
         fetched_years.append(year)

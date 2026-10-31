@@ -14,10 +14,16 @@ fetch them:
     kaggle datasets download -d prash4nt/delhi-sldc-load-data-5-min-resolution \
         -p data/raw/sldc --unzip
 
-WARNING: the source timestamps are day-first (dd-mm-yyyy HH:MM). Pandas'
-default date inference is NOT trustworthy on this format (it silently
-guesses month-first for ambiguous rows). This module always parses with an
-explicit day-first format and never calls `pd.to_datetime` without one.
+NOTE (verified against the actual downloaded file, 2026-10-31): the current
+Kaggle export's header is `timestamp,load_MW` and timestamps are ISO
+`YYYY-MM-DD HH:MM:SS` (unambiguous, year-first) — e.g. `2023-04-01 00:00:00`.
+This differs from an earlier assumption that the export was day-first
+(`dd-mm-yyyy HH:MM`); that format is kept below as a fallback in case a
+future revision of the dataset reverts to it, but is no longer the primary
+candidate. Either way, this module always parses with an explicit format
+list and never calls `pd.to_datetime` without one — never trusting pandas'
+format inference, which silently guesses wrong on ambiguous day/month
+values.
 """
 
 from __future__ import annotations
@@ -30,16 +36,21 @@ import pandas as pd
 IST = "Asia/Kolkata"
 
 # Candidate column names seen in Delhi-SLDC-style exports; the first match in
-# each list wins. Keeping this as a lookup (rather than hard failing on exact
-# names) makes the ingester resilient to minor header variations between
-# dataset revisions.
-_TIMESTAMP_CANDIDATES = ["timestamp", "datetime", "date_time", "Timestamp", "DateTime"]
-_LOAD_CANDIDATES = ["load_mw", "load", "Load", "DELHI", "delhi_load_mw", "demand_mw"]
+# each list wins, matched case-insensitively (the current export uses
+# "load_MW", mixed case). Keeping this as a lookup (rather than hard failing
+# on exact names) makes the ingester resilient to minor header variations
+# between dataset revisions.
+_TIMESTAMP_CANDIDATES = ["timestamp", "datetime", "date_time"]
+_LOAD_CANDIDATES = ["load_mw", "load", "delhi", "delhi_load_mw", "demand_mw"]
 
-# Explicit day-first formats to try, most specific first. We never pass
+# Explicit formats to try, most specific/unambiguous first. We never pass
 # `dayfirst=True` alone to `pd.to_datetime` and rely on inference — we try
 # exact formats so a parse failure is loud rather than silently wrong.
+# ISO (year-first) is what the current export actually uses; the day-first
+# variants are kept as a fallback only.
 _DATETIME_FORMATS = [
+    "%Y-%m-%d %H:%M:%S",
+    "%Y-%m-%d %H:%M",
     "%d-%m-%Y %H:%M",
     "%d-%m-%Y %H:%M:%S",
     "%d/%m/%Y %H:%M",
@@ -65,12 +76,15 @@ def _find_raw_files(raw_dir: Path) -> list[Path]:
 
 
 def _resolve_column(df: pd.DataFrame, candidates: list[str], role: str) -> str:
+    lower_to_actual = {c.lower(): c for c in df.columns}
     for name in candidates:
-        if name in df.columns:
-            return name
+        actual = lower_to_actual.get(name.lower())
+        if actual is not None:
+            return actual
     raise ValueError(
         f"Could not find a {role} column in SLDC export. "
-        f"Looked for any of {candidates!r}, found columns {list(df.columns)!r}."
+        f"Looked for any of {candidates!r} (case-insensitive), "
+        f"found columns {list(df.columns)!r}."
     )
 
 

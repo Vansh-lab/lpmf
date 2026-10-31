@@ -239,6 +239,12 @@ def resample_blocks(df: pd.DataFrame) -> tuple[pd.DataFrame, pd.DataFrame]:
     hourly = base.resample("1h").agg(agg).reset_index()
     hourly["imputed"] = hourly["imputed"].astype(bool)
     hourly["is_outlier"] = hourly["is_outlier"].astype(bool)
+    # `block` (1-96) is a 15-min-grid concept; for the hourly frame we tag
+    # each row with the block number of that hour's first 15-min slot, so
+    # it stays within the same 1-96 numbering and the final schema (which
+    # both frames share) doesn't need an hourly-specific field.
+    hourly["block"] = (hourly["ts_ist"].dt.hour * 4 + 1).astype(int)
+    hourly["impute_method"] = np.where(hourly["imputed"], IMPUTE_TOD_MEDIAN, IMPUTE_NONE)
 
     return fifteen, hourly
 

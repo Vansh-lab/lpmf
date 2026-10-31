@@ -83,7 +83,12 @@ def plot_boxplot_by_month(df_15min: pd.DataFrame, ax) -> None:
     df = df_15min.copy()
     df["month"] = pd.to_datetime(df["ts_ist"]).dt.month
     data = [df.loc[df["month"] == m, "load_mw"].dropna() for m in range(1, 13)]
-    ax.boxplot(data, labels=[str(m) for m in range(1, 13)])
+    month_labels = [str(m) for m in range(1, 13)]
+    try:
+        # matplotlib >= 3.9 renamed `labels` -> `tick_labels`.
+        ax.boxplot(data, tick_labels=month_labels)
+    except TypeError:
+        ax.boxplot(data, labels=month_labels)
     ax.set_title("Load by month (boxplot)")
     ax.set_xlabel("Month")
 
@@ -258,7 +263,11 @@ OLS slope (β): **{slope:.3f} MW/°C** — this is the β used on the Weather Im
 
 def main() -> None:
     parser = argparse.ArgumentParser(description="Generate the LPMF data quality report.")
-    parser.add_argument("--input-5min", default="data/interim/delhi_5min_clean.parquet")
+    parser.add_argument(
+        "--input-5min",
+        default="data/interim/delhi_5min_raw.parquet",
+        help="The true raw (pre-cleaning) 5-min frame, used for the before-imputation stats.",
+    )
     parser.add_argument("--input-15min", default="data/processed/delhi_15min.parquet")
     parser.add_argument("--output-md", default="docs/DATA_QUALITY.md")
     parser.add_argument("--output-png", default="docs/data_quality_panel.png")
