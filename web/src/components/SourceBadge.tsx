@@ -31,10 +31,12 @@ export function SourceBadge({
 }
 
 const kindStyles: Record<ProvenanceKind, string> = {
+  // Text uses the -text variants (theme-tuned for AA contrast); the dot
+  // below uses the raw brand hue.
   [ProvenanceKind.REAL]:
-    "border-[color:var(--lpmf-green)]/30 bg-[color:var(--lpmf-green)]/10 text-[color:var(--lpmf-green)]",
+    "border-[color:var(--lpmf-green)]/30 bg-[color:var(--lpmf-green)]/10 text-[color:var(--lpmf-green-text)]",
   [ProvenanceKind.SYNTHETIC]:
-    "border-[color:var(--lpmf-amber)]/30 bg-[color:var(--lpmf-amber)]/10 text-[color:var(--lpmf-amber)]",
+    "border-[color:var(--lpmf-amber)]/30 bg-[color:var(--lpmf-amber)]/10 text-[color:var(--lpmf-amber-text)]",
   [ProvenanceKind.FOREIGN]:
     "border-[color:var(--lpmf-muted)]/30 bg-[color:var(--lpmf-muted)]/10 text-[color:var(--lpmf-muted)]",
   [ProvenanceKind.ILLUSTRATIVE]:

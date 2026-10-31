@@ -1,33 +1,110 @@
 @import "tailwindcss";
 
 :root {
-  /* LPMF palette */
-  --lpmf-graphite: #1e2227;
+  /* --- LPMF "Instrument Panel" palette --------------------------------- */
+  /* Light mode: warm paper, not pure white. Elevation goes paper -> white. */
+  --lpmf-base: #fafaf8;
+  --lpmf-recessed: #f1eee6;
+  --lpmf-surface-1: #f6f4ee;
+  --lpmf-surface-2: #ffffff;
+  --lpmf-surface-3: #ffffff;
+
   --lpmf-ink: #22262b;
   --lpmf-muted: #5f6670;
   --lpmf-amber: #e39b16;
+  --lpmf-amber-rgb: 227, 155, 22;
   --lpmf-green: #2e7d5b;
-  --lpmf-panel: #f3f4f6;
+  --lpmf-green-rgb: 46, 125, 91;
+  --lpmf-red: #c4342a;
+  --lpmf-red-rgb: 196, 52, 42;
 
-  --background: #ffffff;
+  /* Text-safe accent variants: the raw brand hexes above are tuned for
+     borders/dots/glows, not for small text, and don't clear WCAG AA
+     (4.5:1) against every surface in every theme. These do — verified
+     against surface-2 in dark mode and white in light mode. Use these,
+     not the raw --lpmf-amber/--lpmf-green, wherever the color is text. */
+  --lpmf-amber-text: #946008;
+  --lpmf-green-text: var(--lpmf-green);
+
+  --background: var(--lpmf-base);
   --foreground: var(--lpmf-ink);
-  --surface: var(--lpmf-panel);
+  --surface: var(--lpmf-surface-2);
+  --surface-sunken: var(--lpmf-surface-1);
+  --surface-recessed: var(--lpmf-recessed);
   --border-subtle: #e2e4e8;
+  --border-faint: rgba(0, 0, 0, 0.06);
+
+  /* Multi-layer elevation shadows (light) */
+  --lpmf-shadow-card:
+    0 1px 2px rgba(20, 20, 18, 0.04), 0 4px 10px rgba(20, 20, 18, 0.05),
+    0 12px 24px rgba(20, 20, 18, 0.04);
+  --lpmf-shadow-card-hover:
+    0 2px 4px rgba(20, 20, 18, 0.05), 0 8px 18px rgba(20, 20, 18, 0.07),
+    0 20px 36px rgba(20, 20, 18, 0.06);
+  --lpmf-shadow-recessed: inset 0 1px 3px rgba(20, 20, 18, 0.07);
 }
 
 :root[data-theme="dark"] {
-  --background: var(--lpmf-graphite);
+  --lpmf-base: #0c0e11;
+  --lpmf-recessed: #090b0d;
+  --lpmf-surface-1: #15181d;
+  --lpmf-surface-2: #1b1f26;
+  --lpmf-surface-3: #22272f;
+
+  --background: var(--lpmf-base);
   --foreground: #e7e9eb;
-  --surface: #262b31;
-  --border-subtle: #30363d;
+  --surface: var(--lpmf-surface-2);
+  --surface-sunken: var(--lpmf-surface-1);
+  --surface-recessed: var(--lpmf-recessed);
+  --lpmf-muted: #8b929b;
+  --border-subtle: #2a2f37;
+  --border-faint: rgba(255, 255, 255, 0.06);
+
+  /* Lighter red on the dark base: #c4342a (used on light/paper
+     backgrounds) only clears ~3.6:1 against #0c0e11, below WCAG AA for
+     text. #f87171 clears ~7:1 against the same base. */
+  --lpmf-red: #f87171;
+  --lpmf-red-rgb: 248, 113, 113;
+
+  /* --lpmf-green only clears ~3.3:1 against surface-2 in dark mode; this
+     lighter green clears ~7.5:1. Amber already clears ~7:1 as-is here. */
+  --lpmf-amber-text: var(--lpmf-amber);
+  --lpmf-green-text: #45c48c;
+
+  --lpmf-shadow-card:
+    0 1px 2px rgba(0, 0, 0, 0.3), 0 4px 10px rgba(0, 0, 0, 0.32), 0 16px 32px rgba(0, 0, 0, 0.28);
+  --lpmf-shadow-card-hover:
+    0 2px 4px rgba(0, 0, 0, 0.35), 0 10px 22px rgba(0, 0, 0, 0.38), 0 24px 44px rgba(0, 0, 0, 0.32);
+  --lpmf-shadow-recessed: inset 0 1px 4px rgba(0, 0, 0, 0.55);
 }
 
 @media (prefers-color-scheme: dark) {
   :root:not([data-theme="light"]) {
-    --background: var(--lpmf-graphite);
+    --lpmf-base: #0c0e11;
+    --lpmf-recessed: #090b0d;
+    --lpmf-surface-1: #15181d;
+    --lpmf-surface-2: #1b1f26;
+    --lpmf-surface-3: #22272f;
+
+    --background: var(--lpmf-base);
     --foreground: #e7e9eb;
-    --surface: #262b31;
-    --border-subtle: #30363d;
+    --surface: var(--lpmf-surface-2);
+    --surface-sunken: var(--lpmf-surface-1);
+    --surface-recessed: var(--lpmf-recessed);
+    --lpmf-muted: #8b929b;
+    --border-subtle: #2a2f37;
+    --border-faint: rgba(255, 255, 255, 0.06);
+    --lpmf-red: #f87171;
+    --lpmf-red-rgb: 248, 113, 113;
+    --lpmf-amber-text: var(--lpmf-amber);
+    --lpmf-green-text: #45c48c;
+
+    --lpmf-shadow-card:
+      0 1px 2px rgba(0, 0, 0, 0.3), 0 4px 10px rgba(0, 0, 0, 0.32), 0 16px 32px rgba(0, 0, 0, 0.28);
+    --lpmf-shadow-card-hover:
+      0 2px 4px rgba(0, 0, 0, 0.35), 0 10px 22px rgba(0, 0, 0, 0.38),
+      0 24px 44px rgba(0, 0, 0, 0.32);
+    --lpmf-shadow-recessed: inset 0 1px 4px rgba(0, 0, 0, 0.55);
   }
 }
 
@@ -35,44 +112,57 @@
   --color-background: var(--background);
   --color-foreground: var(--foreground);
   --font-sans: var(--font-inter);
+  --font-mono: var(--font-mono-instrument);
 }
 
 body {
   background: var(--background);
   color: var(--foreground);
   font-family: var(--font-inter), Inter, Arial, Helvetica, sans-serif;
+  position: relative;
+}
+
+/* Subtle grain so the base layer doesn't read as a flat CSS color. Fixed,
+   behind all content, inert to interaction. */
+body::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  opacity: 0.035;
+  mix-blend-mode: overlay;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
 }
 
 /* KaTeX ships its own CSS via the katex package; keep governing equations
-   legible against both panel colours. */
+   legible against both panel colours, and give numerals a "meter" feel. */
 .katex {
   color: var(--foreground);
 }
 
-/* Login-screen load-curve artwork: a slow one-time "draw" on load, using
-   pathLength=1 so the dash math is resolution-independent. */
-@keyframes lpmf-draw {
-  from {
-    stroke-dashoffset: 1;
-  }
-  to {
-    stroke-dashoffset: 0;
-  }
+/* Numeric / instrument-reading typography: MW values, percentages, codes. */
+.lpmf-mono {
+  font-family: var(--font-mono-instrument), "JetBrains Mono", ui-monospace, monospace;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: 0.01em;
 }
 
-.lpmf-draw {
-  stroke-dasharray: 1;
-  stroke-dashoffset: 1;
-  animation: lpmf-draw 2.4s ease-out forwards;
-}
-
-.lpmf-draw-delay {
-  animation-delay: 0.3s;
+/* Amber glow treatment for active/important elements — a soft halo, not a
+   flat fill. */
+.lpmf-amber-glow {
+  box-shadow:
+    0 0 0 1px rgba(var(--lpmf-amber-rgb), 0.35),
+    0 0 18px rgba(var(--lpmf-amber-rgb), 0.22);
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .lpmf-draw {
-    animation: none;
-    stroke-dashoffset: 0;
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+    scroll-behavior: auto !important;
   }
 }

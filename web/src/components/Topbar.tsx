@@ -1,6 +1,7 @@
 "use client";
 
 import { signOut } from "next-auth/react";
+import { motion, useReducedMotion } from "framer-motion";
 import { SourceBadge } from "@/components/SourceBadge";
 import { ProvenanceKind } from "@/lib/provenance";
 
@@ -9,8 +10,10 @@ export function Topbar({
 }: {
   user: { name?: string | null; email?: string | null; image?: string | null } | null;
 }) {
+  const prefersReducedMotion = useReducedMotion();
+
   return (
-    <header className="flex h-14 shrink-0 items-center justify-between gap-4 overflow-hidden border-b border-[color:var(--border-subtle)] bg-[color:var(--surface)] px-6">
+    <header className="relative flex h-14 shrink-0 items-center justify-between gap-4 overflow-hidden bg-[color:var(--surface)] px-6">
       <div className="flex min-w-0 items-center gap-3">
         <span className="shrink-0 font-semibold text-[color:var(--foreground)]">LPMF</span>
         <span className="hidden truncate text-sm text-[color:var(--lpmf-muted)] lg:inline">
@@ -46,11 +49,26 @@ export function Topbar({
           <button
             type="button"
             onClick={() => signOut({ callbackUrl: "/login" })}
-            className="rounded-md border border-[color:var(--border-subtle)] px-2.5 py-1 text-xs font-medium text-[color:var(--foreground)] transition hover:bg-[color:var(--border-subtle)]/60"
+            className="rounded-md border border-[color:var(--border-subtle)] px-2.5 py-1 text-xs font-medium text-[color:var(--foreground)] transition hover:bg-[color:var(--border-faint)]"
           >
             Sign out
           </button>
         </div>
+      </div>
+
+      {/* Status-LED line: a thin amber-to-transparent gradient that drifts
+          slowly, like current on a live rail. Ambient only — very low
+          opacity, slow loop. */}
+      <div className="pointer-events-none absolute inset-x-0 bottom-0 h-px overflow-hidden">
+        <motion.div
+          className="h-full w-1/3"
+          style={{
+            background:
+              "linear-gradient(90deg, transparent, rgba(var(--lpmf-amber-rgb), 0.9), transparent)",
+          }}
+          animate={prefersReducedMotion ? undefined : { x: ["-100%", "400%"] }}
+          transition={{ duration: 7, repeat: Infinity, ease: "linear" }}
+        />
       </div>
     </header>
   );
