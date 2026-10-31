@@ -1,0 +1,40 @@
+# data
+data/raw/**
+data/interim/**
+data/processed/**
+data/synthetic/**
+!data/raw/.gitkeep
+!data/interim/.gitkeep
+!data/processed/.gitkeep
+!data/synthetic/.gitkeep
+
+# node
+web/node_modules/
+web/.next/
+web/out/
+web/.env
+web/.env.local
+web/*.tsbuildinfo
+web/prisma/dev.db
+web/prisma/dev.db-journal
+
+# python
+ml/.venv/
+api/.venv/
+**/__pycache__/
+*.pyc
+.pytest_cache/
+.ruff_cache/
+*.egg-info/
+
+# env
+.env
+*.env.local
+
+# OS
+.DS_Store
+Thumbs.db
+
+# editors
+.vscode/
+.idea/
