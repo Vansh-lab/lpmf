@@ -1,0 +1,22 @@
+# IPL season windows used for the ipl_season event flag (features/build.py).
+#
+# IMPORTANT — what this is and isn't: these are TOURNAMENT START/END dates
+# only, not a verified match-by-match fixture list. A web search for each
+# season's full schedule returned confirmed opening/closing dates but not a
+# reproducible per-match table (aggregator pages, not the primary source).
+# So `is_ipl_season` flags every day inside a season's window as a coarse
+# "elevated evening TV/AC viewership" period — it is NOT true on only actual
+# match days (IPL has rest days within a season). Before using this for
+# anything beyond a rough feature, replace it with iplt20.com's own archived
+# schedule for exact match dates.
+#
+# 2026 is intentionally omitted: IPL 2026 (if it follows the usual
+# March-May pattern) falls entirely after this project's data coverage
+# (Delhi SLDC data ends 2026-01-12), so it is out of scope for now and
+# wasn't independently verified.
+#
+# Columns: season_year,start_date,end_date,source
+season_year,start_date,end_date,source
+2023,2023-03-31,2023-05-28,https://www.wisden.com/series/indian-premier-league-2023/cricket-news/ipl-2023-schedule-full-list-indian-premier-league-fixtures-dates-venues-match-timings
+2024,2024-03-22,2024-05-26,https://www.outlookindia.com/sports/cricket/indian-premier-league-2024-bcci-announces-full-schedule-for-ipl-17-all-matches-to-played-in-india-final-in-chennai-on-may-26
+2025,2025-03-22,2025-05-25,https://business-standard.com/cricket/ipl/ipl-2025-full-schedule-timetable-venues-time-live-streaming-telecast-125021600512_1.html
