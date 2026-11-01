@@ -56,8 +56,16 @@ class CategoryResult:
 
 
 def _residential_daily(hour: np.ndarray) -> np.ndarray:
+    # Bimodal, deliberately: a daytime/afternoon AC bump (dominant on hot
+    # days, once heat_effect() is added on top of this) competing with an
+    # evening lighting/entertainment peak (dominant on cooler days). A
+    # single evening-only bump made the v1 model's peak land ~5h later
+    # than Delhi's real aggregate, which actually peaks mid-afternoon on
+    # the many hot days in the dataset — this shape plus heat_effect is
+    # what lets which-peak-wins vary day to day instead of being fixed.
     shape = (
-        _wrapped_gaussian(hour, center=21.5, width=2.2, amp=380)  # night AC/lighting peak
+        _wrapped_gaussian(hour, center=15.0, width=2.8, amp=260)  # afternoon AC
+        + _wrapped_gaussian(hour, center=21.5, width=2.2, amp=320)  # evening lighting/AC
         + _wrapped_gaussian(hour, center=8.0, width=1.3, amp=160)  # morning routine bump
         - _wrapped_gaussian(hour, center=4.0, width=1.8, amp=220)  # pre-dawn trough
     )
@@ -65,8 +73,12 @@ def _residential_daily(hour: np.ndarray) -> np.ndarray:
 
 
 def _commercial_daily(hour: np.ndarray) -> np.ndarray:
-    # Plateau 10:00-22:00 (shops & offices), low overnight.
-    shape = 260 * (1 / (1 + np.exp(-(hour - 9.5)))) * (1 / (1 + np.exp(hour - 22.0)))
+    # Plateau 10:00-22:00 (shops & offices), low overnight, with an
+    # afternoon AC bump on top (malls/offices run heaviest cooling
+    # 13:00-17:00, not just "on" uniformly through the plateau).
+    plateau = 220 * (1 / (1 + np.exp(-(hour - 9.5)))) * (1 / (1 + np.exp(hour - 22.0)))
+    afternoon_ac = _wrapped_gaussian(hour, center=15.0, width=2.5, amp=90)
+    shape = plateau + afternoon_ac
     return _center(shape)
 
 
@@ -117,7 +129,7 @@ CATEGORY_SPECS = [
         daily_fn=_residential_daily,
         weekend_factor=1.08,
         sunday_dip_mw=0.0,
-        heat_cool_coef=14.0,
+        heat_cool_coef=22.0,
         heat_heat_coef=6.0,
         holiday_delta_mw=40.0,  # people home -> slightly higher
         ipl_evening_bump_mw=25.0,
@@ -131,7 +143,7 @@ CATEGORY_SPECS = [
         daily_fn=_commercial_daily,
         weekend_factor=0.9,
         sunday_dip_mw=90.0,
-        heat_cool_coef=9.0,
+        heat_cool_coef=13.0,
         heat_heat_coef=2.0,
         holiday_delta_mw=-60.0,  # many offices/shops closed
         ipl_evening_bump_mw=8.0,  # restaurants/bars a little busier
