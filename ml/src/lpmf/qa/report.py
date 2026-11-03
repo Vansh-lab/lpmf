@@ -17,6 +17,8 @@ import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 
+from lpmf.engines.weather import heat_sensitivity
+
 logger = logging.getLogger(__name__)
 
 KNOWN_ALL_TIME_PEAK_MW = 8748.0
@@ -164,9 +166,10 @@ def plot_load_vs_heat_index(df_15min: pd.DataFrame, ax) -> float:
     y = df["load_mw"].to_numpy()
     ax.scatter(x, y, s=1, alpha=0.2)
     if len(x) > 1:
-        slope, intercept = np.polyfit(x, y, 1)
+        fit = heat_sensitivity(y, x)
+        slope = fit["beta_mw_per_c"]
         xs = np.linspace(x.min(), x.max(), 100)
-        ax.plot(xs, slope * xs + intercept, color="red", linewidth=1.5)
+        ax.plot(xs, slope * xs + fit["intercept_mw"], color="red", linewidth=1.5)
     else:
         slope = float("nan")
     ax.set_title(f"Load vs heat index (OLS slope = {slope:.2f} MW/°C)")
