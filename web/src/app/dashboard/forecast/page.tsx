@@ -1,12 +1,19 @@
-import { PlaceholderPage } from "@/components/PlaceholderPage";
+import { EquationBlock } from "@/components/EquationBlock";
+import { PageShell } from "@/components/dashboard/PageShell";
+import { ForecastView } from "./ForecastView";
 
 export default function ForecastPage() {
   return (
-    <PlaceholderPage
+    <PageShell
       title="04 · Forecast"
-      equation="\hat{L}_{t+h} \pm q_{1-\alpha}"
-      equationCaption="Point forecast with a conformal prediction interval at level 1−α."
-      chartLabel="Forecast with prediction interval"
-    />
+      equation={
+        <EquationBlock
+          latex="\hat{L}_{t+h} \pm q_{1-\alpha}"
+          caption="Day-ahead point forecast with its split-conformal P10–P90 interval (1−α = 80%)."
+        />
+      }
+    >
+      <ForecastView />
+    </PageShell>
   );
 }

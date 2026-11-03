@@ -1,12 +1,19 @@
-import { PlaceholderPage } from "@/components/PlaceholderPage";
+import { EquationBlock } from "@/components/EquationBlock";
+import { PageShell } from "@/components/dashboard/PageShell";
+import { WeatherView } from "./WeatherView";
 
 export default function WeatherImpactPage() {
   return (
-    <PlaceholderPage
+    <PageShell
       title="03 · Weather Impact"
-      equation="L = \beta_0 + \beta_1 \cdot \mathrm{HI} + \varepsilon"
-      equationCaption="Load regressed on heat index (HI); β₁ is the MW/°C sensitivity."
-      chartLabel="Load vs heat index"
-    />
+      equation={
+        <EquationBlock
+          latex="P = \alpha + \beta \cdot HI, \qquad HI = f(T, RH)"
+          caption="Ordinary least squares of load on heat index over every 15-min block."
+        />
+      }
+    >
+      <WeatherView />
+    </PageShell>
   );
 }

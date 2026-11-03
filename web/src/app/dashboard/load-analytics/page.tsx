@@ -1,12 +1,19 @@
-import { PlaceholderPage } from "@/components/PlaceholderPage";
+import { EquationBlock } from "@/components/EquationBlock";
+import { PageShell } from "@/components/dashboard/PageShell";
+import { LoadAnalyticsView } from "./LoadAnalyticsView";
 
 export default function LoadAnalyticsPage() {
   return (
-    <PlaceholderPage
+    <PageShell
       title="02 · Load Analytics"
-      equation="L(t) = T(t) + S(t) + R(t)"
-      equationCaption="Load decomposed into trend, seasonal, and residual components."
-      chartLabel="Load decomposition"
-    />
+      equation={
+        <EquationBlock
+          latex="LF = \frac{P_{avg}}{P_{max}}, \qquad PAR = \frac{1}{LF}"
+          caption="Load factor and peak-to-average ratio: how peaky demand is."
+        />
+      }
+    >
+      <LoadAnalyticsView />
+    </PageShell>
   );
 }

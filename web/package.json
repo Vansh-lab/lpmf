@@ -8,7 +8,8 @@
     "start": "next start",
     "lint": "eslint",
     "format": "prettier --write .",
-    "format:check": "prettier --check ."
+    "format:check": "prettier --check .",
+    "api-types": "openapi-typescript ../api/openapi.json -o src/lib/api-types.ts && prettier --write src/lib/api-types.ts"
   },
   "dependencies": {
     "@auth/prisma-adapter": "^2.7.4",
@@ -21,7 +22,8 @@
     "next-auth": "5.0.0-beta.32",
     "nodemailer": "^10.3.1",
     "react": "19.3.0",
-    "react-dom": "19.3.0"
+    "react-dom": "19.3.0",
+    "recharts": "^3.10.1"
   },
   "overrides": {
     "nodemailer": "^10.3.1"
@@ -37,6 +39,7 @@
     "eslint": "^9",
     "eslint-config-next": "^15.5.28",
     "eslint-config-prettier": "^9.1.0",
+    "openapi-typescript": "^7.13.0",
     "prettier": "^3.3.3",
     "prisma": "^5.22.0",
     "tailwindcss": "^4",

@@ -1,12 +1,19 @@
-import { PlaceholderPage } from "@/components/PlaceholderPage";
+import { EquationBlock } from "@/components/EquationBlock";
+import { PageShell } from "@/components/dashboard/PageShell";
+import { TransformerView } from "./TransformerView";
 
 export default function TransformerHealthPage() {
   return (
-    <PlaceholderPage
+    <PageShell
       title="06 · Transformer Health"
-      equation="\theta_H = \theta_A + \Delta\theta_{TO} + \Delta\theta_H"
-      equationCaption="Hot-spot winding temperature: ambient + top-oil rise + hot-spot-to-top-oil gradient (IEEE C57.91)."
-      chartLabel="Transformer thermal loading"
-    />
+      equation={
+        <EquationBlock
+          latex="V = 2^{(\theta_h - 98)/6}, \qquad L = \sum_n V_n\,\Delta t"
+          caption="IEC 60076-7 relative ageing rate from the winding hot-spot temperature, and the insulation life used."
+        />
+      }
+    >
+      <TransformerView />
+    </PageShell>
   );
 }
