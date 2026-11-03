@@ -165,3 +165,75 @@ roughly twice as wide:
 
 Day-of-year regularization to narrow the train-test gap: diminishing returns,
 learning curves show no held-out harm. Phase 3 model changes are stopped.
+
+## Phase 4 — Uncertainty and explainability
+
+Built on the frozen final LightGBM (test MAPE 3.926%, i.e. 3.93%). Code:
+`ml/src/lpmf/models/conformal.py`, `shap_examples.py`. Not wired into the
+API or dashboard.
+
+### Conformal bands (P10-P90)
+
+MAPIE 1.6 `SplitConformalRegressor`, prefit, calibrated on all val
+(origin, horizon) rows (1,657,296) and evaluated on test (1,672,080).
+P10-P90 is an **80%** central interval (not the "~90%" in the PPT).
+Output: `models/artifacts/conformal_bands.parquet` (test rows; primary
+`lower_mw`/`upper_mw`, plus a relative-score variant `*_rel`) and
+`conformal_summary.json`.
+
+| Score | Test coverage | Mean width | h01-04 | h05-24 | h25-48 | h49-96 |
+|---|---|---|---|---|---|---|
+| absolute (primary) | **84.4%** | 602 MW (constant) | 89.9% | 87.6% | 84.8% | 82.3% |
+| gamma (relative) | 83.5% | 562 MW | 89.3% | 86.9% | 84.1% | 81.4% |
+
+- Marginal coverage is **above** the 80% target (84.4%): val residuals are
+  larger than test residuals (val is Mar-Jun heavy, MAPE 4.29% vs 3.93%), so
+  the calibrated width is conservative for this test window. Misses are
+  symmetric (7.9% below, 7.8% above).
+- Coverage is **not uniform**, so treat 80% as a marginal, not conditional,
+  statement. Absolute score by month: Jan 91%, Jul 77%, Aug 73%, Sep 77%,
+  Oct 80%, Nov 98%, Dec 96%; by horizon: 90% at h1-4 falling to 82% at
+  h49-96. The constant-width band is too wide in calm winter months and
+  too narrow in Jul-Sep. The relative score evens the months out for
+  Jul-Sep (85%, 79%, 84%) but undercovers Oct (73%) — neither is
+  conditionally calibrated.
+- Exchangeability between val and test does not hold (different seasons);
+  the empirical coverage above is the number to quote.
+
+### TreeSHAP examples
+
+`shap` 0.54 TreeExplainer on the saved model; base value 4314 MW.
+Each day is a day-ahead explanation: origin 23:45 the evening before, 96
+blocks. Additivity (base + sum SHAP = prediction) holds to 1e-11 MW on all
+four days. Files: `models/artifacts/shap_examples/<day>.png`,
+`<day>_waterfall.png`, `<day>_shap.parquet`, `index.json`. Days were picked
+by rule, not by error.
+
+| Day | Date | Day MAPE | Band coverage | Largest drivers (mean abs SHAP, MW) |
+|---|---|---|---|---|
+| hot_summer | 2025-07-28 | 2.63% | 89.7% | tlag_1day 1033, load_roll_mean_24h 190, target_dow 179, night_temp_c 142 |
+| normal | 2025-10-15 | 2.24% | 93.5% | tlag_1day 378, tlag_4w_avg 102, night_temp_c 84 |
+| festival (Diwali) | 2025-10-20 | 8.65% | 49.3% | tlag_1day 426, target_is_holiday 222, target_dow 120 |
+| oct_nov_evening | 2025-10-27 | 4.12% | 96.2% | tlag_1day 657, target_dow 118, load_roll_mean_24h 110, night_temp_c 87 |
+
+What SHAP shows:
+- **`tlag_1day` dominates every day**, as in the importance ranking. Its
+  contribution swings from about -1200 MW at the overnight trough to
+  about -200 MW at midday on 2025-10-27: it carries the daily shape, with
+  other features adjusting around it.
+- **Hot day (07-28):** the day has the highest heat index in the test set
+  but is a late-July monsoon day, not a Mar-Jun peak; the test window
+  contains no real pre-monsoon summer. Weather features (`night_temp_c`,
+  `temp_roll_mean_24h`) add roughly +100-170 MW each, small next to the lag.
+- **Festival (Diwali):** the model sees the holiday (`target_is_holiday`
+  is the second-largest driver, -272 MW at 12:30), but that is far too small:
+  actual load was roughly 2000 MW below the 4-week same-block average
+  (5530 MW), and the forecast overshoots the whole day (MAPE 8.65%, only
+  49% inside the band). This is the clearest weakness found: holiday
+  effects are learned from very few training holidays and a single
+  indicator. This is a diagnosis, not acted on (Phase 3 stopped).
+- **Oct/Nov evening (10-27):** evening forecast is high by ~100-250 MW
+  after 19:00; `tlag_1day` pulls the forecast down toward the falling
+  evening and `target_cos_hour` goes negative after 18:00, consistent with
+  the evening ramp-down. I did not have the context for the "hour-23
+  history" mentioned in the brief, so no hour-23-specific analysis was done.
