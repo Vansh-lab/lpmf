@@ -4,6 +4,17 @@ This module is deliberately conservative: every correction is logged, every
 imputed value is flagged (`imputed`, `impute_method`), and nothing is
 fabricated across gaps longer than 3 hours — those are left as NaN and
 excluded from training.
+
+Outlier flagging and gap filling are causal: whether a reading is thrown
+out, and what replaces it, depend only on readings at or before it. The same
+load series feeds both the lag/rolling features and the forecast targets, so
+anything two-sided leaks the future into the features — e.g. the 23:55 slot
+interpolated from the next day's 00:00 reading, a week-ago lag that contains
+the target's own load, or a centred outlier window whose verdict on a
+reading reveals which way the load moved next.
+
+One hindsight remains: a gap's fill method is chosen from its total length,
+so a slot early in what becomes a long gap is left NaN, not forward-filled.
 """
 
 from __future__ import annotations
@@ -23,12 +34,26 @@ MAX_PLAUSIBLE_LOAD_MW = 12000.0
 MIN_PLAUSIBLE_LOAD_MW = 0.0  # load <= 0 is impossible
 MAX_FIVE_MIN_JUMP_MW = 800.0
 
-HAMPEL_WINDOW = 25
+# Trailing 35-min window. A centred 25-slot window, with no floor on sigma,
+# flagged 11.5% of all real readings (the MAD collapses to ~0 on smooth
+# load) and decided each verdict with readings up to 2 h ahead. This setting
+# flags 0.1% and only 0.5% of the slots right after a real level shift.
+HAMPEL_WINDOW = 7
 HAMPEL_N_SIGMA = 3.0
+HAMPEL_SIGMA_FLOOR_FRAC = 0.02
 
-IMPUTE_LINEAR = "linear_interpolation"
-IMPUTE_TOD_MEDIAN = "time_of_day_median_7day"
+IMPUTE_FFILL = "forward_fill"
+IMPUTE_TOD_PROFILE = "time_of_day_profile_past_5d"
 IMPUTE_NONE = "none"
+
+# A 15-min/hourly block that mixes fill methods reports the most invasive one.
+_IMPUTE_RANK = {IMPUTE_NONE: 0, IMPUTE_FFILL: 1, IMPUTE_TOD_PROFILE: 2}
+_RANK_TO_IMPUTE = {rank: method for method, rank in _IMPUTE_RANK.items()}
+
+# Backtested on held-out real 5-min readings: 3 days fits the 22:35-23:55
+# gaps best but leaves a quarter unfilled, 7 days fills more but drifts with
+# the season; 5 days balances the two.
+PROFILE_LOOKBACK_DAYS = 5
 
 
 @dataclass
@@ -39,8 +64,10 @@ class CleaningLog:
     jump_violations_flagged: list[pd.Timestamp] = field(default_factory=list)
     impossible_value_timestamps: list[pd.Timestamp] = field(default_factory=list)
     outliers_flagged: int = 0
-    gaps_short_linear: int = 0
-    gaps_medium_tod_median: int = 0
+    gaps_short_ffill: int = 0
+    gaps_short_left_nan: int = 0
+    gaps_medium_profile: int = 0
+    gaps_medium_left_nan: int = 0
     gaps_long_left_nan: int = 0
 
     def summary(self) -> dict:
@@ -49,8 +76,10 @@ class CleaningLog:
             "missing_slots_exposed": self.missing_slots_exposed,
             "physically_impossible_flagged": self.physically_impossible_flagged,
             "outliers_flagged": self.outliers_flagged,
-            "gaps_short_linear": self.gaps_short_linear,
-            "gaps_medium_tod_median": self.gaps_medium_tod_median,
+            "gaps_short_ffill": self.gaps_short_ffill,
+            "gaps_short_left_nan": self.gaps_short_left_nan,
+            "gaps_medium_profile": self.gaps_medium_profile,
+            "gaps_medium_left_nan": self.gaps_medium_left_nan,
             "gaps_long_left_nan": self.gaps_long_left_nan,
         }
 
@@ -107,18 +136,19 @@ def flag_physically_impossible(df: pd.DataFrame, log: CleaningLog) -> pd.DataFra
 
 
 def hampel_flag_outliers(df: pd.DataFrame, log: CleaningLog) -> pd.DataFrame:
-    """Step 4: rolling-median Hampel filter (window=25, 3-sigma). Flags,
-    does not delete — flagged points are added to `is_outlier` and their
-    load is set to NaN so they are handled by the gap-filling step below."""
+    """Step 4: trailing rolling-median Hampel filter (3-sigma, sigma floored
+    at 2% of the rolling median). Flags, does not delete — flagged points are
+    added to `is_outlier` and their load is set to NaN so they are handled by
+    the gap-filling step below."""
     out = df.copy()
     load = out["load_mw"]
 
-    rolling_median = load.rolling(window=HAMPEL_WINDOW, center=True, min_periods=5).median()
+    rolling_median = load.rolling(window=HAMPEL_WINDOW, min_periods=5).median()
     abs_dev = (load - rolling_median).abs()
     # 1.4826 scales the MAD to be a consistent estimator of sigma under
     # normality — the standard Hampel-filter constant.
-    mad = abs_dev.rolling(window=HAMPEL_WINDOW, center=True, min_periods=5).median()
-    sigma_hat = 1.4826 * mad
+    mad = abs_dev.rolling(window=HAMPEL_WINDOW, min_periods=5).median()
+    sigma_hat = np.maximum(1.4826 * mad, HAMPEL_SIGMA_FLOOR_FRAC * rolling_median)
 
     with np.errstate(invalid="ignore"):
         is_hampel_outlier = abs_dev > (HAMPEL_N_SIGMA * sigma_hat)
@@ -141,40 +171,47 @@ def _gap_lengths_minutes(na_mask: pd.Series) -> pd.Series:
     return np.where(na_mask, run_len * 5, 0)
 
 
-def _time_of_day_median_fill(df: pd.DataFrame) -> pd.Series:
-    """Fill using the same-time-of-day median of the 7 nearest same-weekday
-    days (i.e. same HH:MM, same day-of-week, 7 closest occurrences by date
-    distance)."""
-    out = df["load_mw"].copy()
-    ts = df["ts_ist"]
-    tod = ts.dt.strftime("%H:%M")
-    dow = ts.dt.day_of_week
-    dates = ts.dt.date
+def _time_of_day_profile_fill(observed: pd.Series, ts: pd.Series) -> np.ndarray:
+    """Causal fill value for every row. For each of the previous
+    PROFILE_LOOKBACK_DAYS days, scale that day's reading at this slot by the
+    ratio of the last observed reading at or before the row (the anchor) to
+    that same day's reading at the anchor's slot; take the median over the
+    days where both readings were observed. Slot and anchor always come from
+    the same day, so a day missing one of them cannot skew the ratio. Uses
+    observed readings only (never other fills); NaN without history/anchor."""
+    obs = observed.to_numpy()
+    by_ts = pd.Series(obs, index=pd.DatetimeIndex(ts))
 
-    missing_idx = out[out.isna()].index
-    for idx in missing_idx:
-        same_slot = (tod == tod.loc[idx]) & (dow == dow.loc[idx]) & (out.notna())
-        if not same_slot.any():
-            continue
-        candidate_dates = pd.Series(dates.loc[same_slot].values)
-        target_date = dates.loc[idx]
-        distances = candidate_dates.apply(lambda d: abs((d - target_date).days))
-        nearest_idx = distances.nsmallest(7).index
-        candidate_values = out.loc[same_slot].reset_index(drop=True).loc[nearest_idx]
-        if len(candidate_values):
-            out.loc[idx] = candidate_values.median()
-    return out
+    positions = np.arange(len(obs), dtype=float)
+    anchor_pos = pd.Series(np.where(np.isnan(obs), np.nan, positions)).ffill().to_numpy()
+    has_anchor = ~np.isnan(anchor_pos)
+    anchor_idx = np.where(has_anchor, anchor_pos, 0).astype(int)
+    anchor_obs = np.where(has_anchor, obs[anchor_idx], np.nan)
+    anchor_ts = ts.take(anchor_idx).reset_index(drop=True)
+
+    estimates = []
+    for k in range(1, PROFILE_LOOKBACK_DAYS + 1):
+        lag = pd.Timedelta(days=k)
+        slot_k = by_ts.reindex(ts - lag).to_numpy()
+        anchor_k = by_ts.reindex(anchor_ts - lag).to_numpy()
+        with np.errstate(divide="ignore", invalid="ignore"):
+            estimates.append(np.where(anchor_k > 0, anchor_obs * slot_k / anchor_k, np.nan))
+    return pd.DataFrame(np.column_stack(estimates)).median(axis=1).to_numpy()
 
 
 def fill_gaps(df: pd.DataFrame, log: CleaningLog) -> pd.DataFrame:
-    """Step 5: gap filling by contiguous-gap length.
+    """Step 5: causal gap filling by contiguous-gap length (see the module
+    docstring for why every fill looks backwards only).
 
-    <= 30 min   -> linear interpolation
-    30 min-3 hr -> same-time-of-day median of the 7 nearest same-weekday days
+    <= 30 min   -> forward fill from the last observed reading
+    30 min-3 hr -> same-slot median profile of the previous 5 days, scaled
+                   to the last observed reading before the gap; left NaN
+                   when that history or anchor is missing
     > 3 hr      -> left as NaN, excluded from training
     """
     out = df.sort_values("ts_ist").reset_index(drop=True)
-    na_mask = out["load_mw"].isna()
+    observed = out["load_mw"].copy()
+    na_mask = observed.isna()
     gap_len_min = _gap_lengths_minutes(na_mask)
 
     out["imputed"] = False
@@ -184,30 +221,30 @@ def fill_gaps(df: pd.DataFrame, log: CleaningLog) -> pd.DataFrame:
     medium_mask = na_mask & (gap_len_min > 30) & (gap_len_min <= 180)
     long_mask = na_mask & (gap_len_min > 180)
 
-    log.gaps_short_linear = int(short_mask.sum())
-    log.gaps_medium_tod_median = int(medium_mask.sum())
+    forward_filled = observed.ffill()
+    short_fill = short_mask & forward_filled.notna()
+    out.loc[short_fill, "load_mw"] = forward_filled.loc[short_fill]
+    out.loc[short_fill, "imputed"] = True
+    out.loc[short_fill, "impute_method"] = IMPUTE_FFILL
+
+    profile_filled = pd.Series(_time_of_day_profile_fill(observed, out["ts_ist"]), index=out.index)
+    medium_fill = medium_mask & np.isfinite(profile_filled)
+    out.loc[medium_fill, "load_mw"] = profile_filled.loc[medium_fill]
+    out.loc[medium_fill, "imputed"] = True
+    out.loc[medium_fill, "impute_method"] = IMPUTE_TOD_PROFILE
+
+    log.gaps_short_ffill = int(short_fill.sum())
+    log.gaps_short_left_nan = int((short_mask & ~short_fill).sum())
+    log.gaps_medium_profile = int(medium_fill.sum())
+    log.gaps_medium_left_nan = int((medium_mask & ~medium_fill).sum())
     log.gaps_long_left_nan = int(long_mask.sum())
-
-    # Linear interpolation for short gaps only: interpolate on the full
-    # series, then only keep the interpolated values where the gap was
-    # actually short (otherwise pandas would happily interpolate long gaps
-    # too, which we explicitly do not want).
-    interpolated_all = out["load_mw"].interpolate(method="linear", limit_area="inside")
-    out.loc[short_mask, "load_mw"] = interpolated_all.loc[short_mask]
-    out.loc[short_mask, "imputed"] = True
-    out.loc[short_mask, "impute_method"] = IMPUTE_LINEAR
-
-    if medium_mask.any():
-        tod_filled = _time_of_day_median_fill(out)
-        out.loc[medium_mask, "load_mw"] = tod_filled.loc[medium_mask]
-        out.loc[medium_mask, "imputed"] = True
-        out.loc[medium_mask, "impute_method"] = IMPUTE_TOD_MEDIAN
-
-    # long_mask rows: leave load_mw as NaN, imputed stays False.
     logger.info(
-        "Gap fill: %d short (linear), %d medium (tod-median), %d long (left NaN).",
-        log.gaps_short_linear,
-        log.gaps_medium_tod_median,
+        "Gap fill: %d short (forward fill), %d short left NaN (no prior reading), "
+        "%d medium (past-5-day profile), %d medium left NaN (no history), %d long (left NaN).",
+        log.gaps_short_ffill,
+        log.gaps_short_left_nan,
+        log.gaps_medium_profile,
+        log.gaps_medium_left_nan,
         log.gaps_long_left_nan,
     )
     return out
@@ -215,13 +252,24 @@ def fill_gaps(df: pd.DataFrame, log: CleaningLog) -> pd.DataFrame:
 
 def resample_blocks(df: pd.DataFrame) -> tuple[pd.DataFrame, pd.DataFrame]:
     """Step 6: resample 5-min -> 15-min (mean) tagged with block 1..96, and
-    emit an hourly version too."""
+    emit an hourly version too. A block with any still-missing 5-min slot is
+    left NaN rather than averaged from the slots that happen to remain."""
+    unknown = set(df["impute_method"].unique()) - set(_IMPUTE_RANK)
+    if unknown:
+        raise ValueError(
+            f"Unknown impute_method value(s) {sorted(unknown)}: the 5-min file was written by an "
+            "older cleaner; re-run `python -m lpmf.pipeline --step clean` first."
+        )
     base = df.set_index("ts_ist")
+    base["_impute_rank"] = base["impute_method"].map(_IMPUTE_RANK)
+    base["_n_missing"] = base["load_mw"].isna().astype(int)
 
     agg = {
         "load_mw": "mean",
         "imputed": "max",
         "is_outlier": "max",
+        "_impute_rank": "max",
+        "_n_missing": "sum",
     }
     numeric_passthrough = [c for c in base.columns if c not in agg and c != "impute_method"]
     for c in numeric_passthrough:
@@ -229,14 +277,16 @@ def resample_blocks(df: pd.DataFrame) -> tuple[pd.DataFrame, pd.DataFrame]:
             agg[c] = "mean"
 
     fifteen = base.resample("15min").agg(agg).reset_index()
+    fifteen.loc[fifteen.pop("_n_missing") > 0, "load_mw"] = np.nan
     fifteen["block"] = (
         fifteen["ts_ist"].dt.hour * 4 + fifteen["ts_ist"].dt.minute // 15 + 1
     ).astype(int)
     fifteen["imputed"] = fifteen["imputed"].astype(bool)
     fifteen["is_outlier"] = fifteen["is_outlier"].astype(bool)
-    fifteen["impute_method"] = np.where(fifteen["imputed"], IMPUTE_TOD_MEDIAN, IMPUTE_NONE)
+    fifteen["impute_method"] = fifteen.pop("_impute_rank").astype(int).map(_RANK_TO_IMPUTE)
 
     hourly = base.resample("1h").agg(agg).reset_index()
+    hourly.loc[hourly.pop("_n_missing") > 0, "load_mw"] = np.nan
     hourly["imputed"] = hourly["imputed"].astype(bool)
     hourly["is_outlier"] = hourly["is_outlier"].astype(bool)
     # `block` (1-96) is a 15-min-grid concept; for the hourly frame we tag
@@ -244,7 +294,7 @@ def resample_blocks(df: pd.DataFrame) -> tuple[pd.DataFrame, pd.DataFrame]:
     # it stays within the same 1-96 numbering and the final schema (which
     # both frames share) doesn't need an hourly-specific field.
     hourly["block"] = (hourly["ts_ist"].dt.hour * 4 + 1).astype(int)
-    hourly["impute_method"] = np.where(hourly["imputed"], IMPUTE_TOD_MEDIAN, IMPUTE_NONE)
+    hourly["impute_method"] = hourly.pop("_impute_rank").astype(int).map(_RANK_TO_IMPUTE)
 
     return fifteen, hourly
 
