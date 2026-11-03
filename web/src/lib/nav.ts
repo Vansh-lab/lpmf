@@ -17,5 +17,5 @@ export const NAV_ITEMS: NavItem[] = [
   { order: "09", label: "Solar & Net Load", href: "/dashboard/solar-net-load", phase: 2 },
   { order: "10", label: "Losses & PF", href: "/dashboard/losses-pf", phase: 2 },
   { order: "11", label: "Theft & Segments", href: "/dashboard/theft-segments", phase: 2 },
-  { order: "12", label: "Data & Model Card", href: "/dashboard/data-model-card", phase: 2 },
+  { order: "12", label: "Data & Model Card", href: "/dashboard/data-model-card", phase: 1 },
 ];

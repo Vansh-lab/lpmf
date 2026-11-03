@@ -24,8 +24,10 @@ export function Topbar({
       </div>
 
       <div className="flex shrink-0 items-center gap-4">
-        {/* Global data-provenance legend — see docs/PROVENANCE.md */}
-        <div className="hidden items-center gap-1.5 rounded-full border border-[color:var(--border-subtle)] px-2.5 py-1 text-xs text-[color:var(--lpmf-muted)] sm:flex">
+        {/* Global data-provenance legend — see docs/PROVENANCE.md. It (~340px)
+            shows from lg and the account name from xl, so on tablet widths
+            neither pushes the title or Sign out off the bar. */}
+        <div className="hidden items-center gap-1.5 rounded-full border border-[color:var(--border-subtle)] px-2.5 py-1 text-xs text-[color:var(--lpmf-muted)] lg:flex">
           <span>Data:</span>
           <SourceBadge kind={ProvenanceKind.REAL} source="measured" />
           <span>/</span>
@@ -45,7 +47,10 @@ export function Topbar({
               {(user?.name ?? user?.email ?? "?").charAt(0).toUpperCase()}
             </div>
           )}
-          <span className="hidden text-sm text-[color:var(--foreground)] sm:inline">
+          <span
+            title={user?.name ?? user?.email ?? undefined}
+            className="hidden max-w-56 truncate text-sm text-[color:var(--foreground)] xl:inline-block"
+          >
             {user?.name ?? user?.email}
           </span>
           <button

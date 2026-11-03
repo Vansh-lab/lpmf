@@ -4,7 +4,9 @@ Final model: single multi-horizon LightGBM (horizon as a feature, 96 blocks
 ahead), `models/artifacts/lightgbm_model.txt`. Tuned with Optuna (25 trials,
 val-MAPE objective); final fit on the full train set, early-stopped on val.
 
-**Final test MAPE: 3.93%** (test = 2025-07-12 .. 2026-01-12). The test split
+**Final test MAPE: 3.93%** (test = 2025-07-12 23:45 .. 2026-01-12, i.e. first
+forecast origin 12 Jul 23:45 and first target day 13 Jul; every origin x horizon
+1-96, n = 1,672,080, not only the dashboard's 23:45 day-ahead view). The test split
 was never used for hyperparameter tuning or early stopping, but test-set error
 diagnostics (where the first LightGBM lost to seasonal-naive) did inform the
 feature design, so test is no longer a fully untouched holdout and this figure
@@ -99,8 +101,9 @@ versions (n = 1,279,461). This is a different row set from the summary above
 (it also keeps the 11,808 rows with no seasonal-naive forecast, which are hard
 rows), so absolute MAPEs differ by ~0.03pp (final model: 3.95% here vs 3.92%);
 numbers from the two row sets should not be compared directly. Two independent
-auditors reproduced the arm results, deltas and iid-day CIs exactly; the
-week-block and training-noise figures come from the statistics audit. Script:
+audit runs (separate AI review agents) reproduced the arm results, deltas and
+iid-day CIs exactly; the week-block and training-noise figures come from the
+statistics audit alone. Script:
 `ablation_attribution/run.py` (scratchpad of the earlier session); per-arm
 results in its `results.json`.
 
@@ -110,7 +113,7 @@ summary's row set.) Attribution:
 
 | Source | Share of -0.94pp | pp |
 |---|---|---|
-| Target-aligned lags | ~64% (61-83% depending on order, see below) | ~0.61 |
+| Target-aligned lags | ~64% (54-74% depending on order, see below) | ~0.61 |
 | Causal cleaning (imputer v1) | ~25% | ~0.23 |
 | Hyperparameter re-tuning | ~10% | ~0.10 |
 
@@ -119,8 +122,9 @@ The lags and cleaning shares are Shapley averages from the fixed-parameter arms
 tuned-to-tuned -0.94pp. The two effects overlap (interaction ~0.18pp): cleaning
 is worth 0.33pp without the lags but only 0.14pp with them, and the lags are
 worth 0.70pp on old data but 0.51pp on pass1 data. So the lags' share of the
-fixed-parameter gain is 61% if they are added after cleaning and 83% if added
-first. "Most of the gain came from the lags" is robust (lags exceed cleaning in
+fixed-parameter -0.84pp is 61% if they are added after cleaning and 83% if added
+first (Shapley average ~72%); as a share of the tuned-to-tuned -0.94pp, which
+also contains the ~0.10pp re-tuning, the same range is 54-74% around ~64%. "Most of the gain came from the lags" is robust (lags exceed cleaning in
 ~90% of week-block bootstrap draws); "64%" is a rough estimate, not a separable
 effect.
 
