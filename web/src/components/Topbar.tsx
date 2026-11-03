@@ -2,6 +2,7 @@
 
 import { signOut } from "next-auth/react";
 import { motion, useReducedMotion } from "framer-motion";
+import { MobileNav } from "@/components/MobileNav";
 import { SourceBadge } from "@/components/SourceBadge";
 import { ProvenanceKind } from "@/lib/provenance";
 
@@ -13,8 +14,9 @@ export function Topbar({
   const prefersReducedMotion = useReducedMotion();
 
   return (
-    <header className="relative flex h-14 shrink-0 items-center justify-between gap-4 overflow-hidden bg-[color:var(--surface)] px-6">
+    <header className="relative flex h-14 shrink-0 items-center justify-between gap-4 overflow-hidden bg-[color:var(--surface)] px-4 sm:px-6">
       <div className="flex min-w-0 items-center gap-3">
+        <MobileNav />
         <span className="shrink-0 font-semibold text-[color:var(--foreground)]">LPMF</span>
         <span className="hidden truncate text-sm text-[color:var(--lpmf-muted)] lg:inline">
           Load Profile Management &amp; Forecasting
