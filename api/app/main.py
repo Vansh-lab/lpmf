@@ -6,13 +6,42 @@ Run with:
 
 from __future__ import annotations
 
-from fastapi import FastAPI
-from fastapi.middleware.cors import CORSMiddleware
+import logging
+from contextlib import asynccontextmanager
 
+from fastapi import FastAPI, Request
+from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import JSONResponse
+
+from app import data
 from app.config import settings
+from app.data import DataNotBuilt
 from app.routers import analytics, dsm, forecast, overview, transformer, weather
 
-app = FastAPI(title=settings.app_name)
+logger = logging.getLogger(__name__)
+
+
+@asynccontextmanager
+async def lifespan(_: FastAPI):
+    # Reading the 1.7M-row conformal bands file takes ~1.5 s; do it (and the
+    # other cached reads) at startup rather than in the first request.
+    try:
+        data.day_ahead_forecasts()
+        data.conformal_summary()
+        weather._weather()
+        analytics._analytics(None, None, 101)
+    except DataNotBuilt as exc:
+        logger.warning("Starting with cold caches: %s", exc)
+    yield
+
+
+app = FastAPI(title=settings.app_name, lifespan=lifespan)
+
+
+@app.exception_handler(DataNotBuilt)
+def data_not_built(_: Request, exc: DataNotBuilt) -> JSONResponse:
+    return JSONResponse(status_code=503, content={"detail": str(exc)})
+
 
 app.add_middleware(
     CORSMiddleware,

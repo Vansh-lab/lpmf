@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+from pathlib import Path
+
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
@@ -16,6 +18,13 @@ class Settings(BaseSettings):
     cors_origins: str = "http://localhost:3000"
 
     database_url: str = "sqlite:///../web/prisma/dev.db"
+
+    # Monorepo root holding data/ and models/ (the ML pipeline's outputs).
+    repo_root: Path = Path(__file__).resolve().parents[2]
+
+    # Overview alert threshold: Delhi's all-time peak demand, 8,748 MW on
+    # 29 Jun 2026 (Delhi SLDC). Tomorrow's forecast above it is a new record.
+    overview_alert_limit_mw: float = 8748.0
 
     @property
     def cors_origin_list(self) -> list[str]:

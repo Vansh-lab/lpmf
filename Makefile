@@ -1,8 +1,9 @@
-.PHONY: install dev-web dev-api dev-ml-shell test-web test-api test-ml lint-web lint-api lint-ml
+.PHONY: install dev-web dev-api dev-ml-shell test-web test-api test-ml lint-web lint-api lint-ml openapi
 
 install:
 	cd web && npm install
 	cd api && python -m venv .venv && .venv/Scripts/python -m pip install -e ".[dev]" || .venv/bin/python -m pip install -e ".[dev]"
+	cd api && (.venv/Scripts/python -m pip install --no-deps -e ../ml || .venv/bin/python -m pip install --no-deps -e ../ml)
 	cd ml && python -m venv .venv && .venv/Scripts/python -m pip install -e ".[dev]" || .venv/bin/python -m pip install -e ".[dev]"
 
 dev-web:
@@ -16,6 +17,9 @@ test-web:
 
 test-api:
 	cd api && (.venv/Scripts/python -m pytest || .venv/bin/python -m pytest)
+
+openapi:
+	cd api && (.venv/Scripts/python -m app.export_openapi || .venv/bin/python -m app.export_openapi)
 
 test-ml:
 	cd ml && (../ml/.venv/Scripts/python -m pytest || ../ml/.venv/bin/python -m pytest)

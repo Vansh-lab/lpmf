@@ -7,11 +7,17 @@ name = "lpmf-api"
 version = "0.1.0"
 description = "LPMF FastAPI service"
 requires-python = ">=3.11"
+# Also needs the `lpmf` package from ../ml for its formula engines, installed
+# without its training dependencies: `pip install --no-deps -e ../ml`
+# (the Makefile's install target does this).
 dependencies = [
   "fastapi>=0.111",
   "uvicorn[standard]>=0.30",
   "pydantic>=2.6",
   "pydantic-settings>=2.2",
+  "numpy>=1.26",
+  "pandas>=2.2",
+  "pyarrow>=16.0",
 ]
 
 [project.optional-dependencies]

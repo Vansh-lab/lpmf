@@ -1,0 +1,1015 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "LPMF API",
+    "version": "0.1.0"
+  },
+  "paths": {
+    "/health": {
+      "get": {
+        "summary": "Health",
+        "operationId": "health_health_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": true,
+                  "type": "object",
+                  "title": "Response Health Health Get"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/overview": {
+      "get": {
+        "tags": [
+          "overview"
+        ],
+        "summary": "Overview",
+        "operationId": "overview_overview_get",
+        "parameters": [
+          {
+            "name": "date",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "format": "date"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Test-set day; default latest.",
+              "title": "Date"
+            },
+            "description": "Test-set day; default latest."
+          },
+          {
+            "name": "limit_mw",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "number",
+              "exclusiveMinimum": 0,
+              "description": "Alert threshold; default Delhi's all-time peak (8,748 MW).",
+              "default": 8748.0,
+              "title": "Limit Mw"
+            },
+            "description": "Alert threshold; default Delhi's all-time peak (8,748 MW)."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/OverviewResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/analytics": {
+      "get": {
+        "tags": [
+          "analytics"
+        ],
+        "summary": "Analytics",
+        "operationId": "analytics_analytics_get",
+        "parameters": [
+          {
+            "name": "start",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "format": "date"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "First day (inclusive); default series start.",
+              "title": "Start"
+            },
+            "description": "First day (inclusive); default series start."
+          },
+          {
+            "name": "end",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "format": "date"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Last day (inclusive); default series end.",
+              "title": "End"
+            },
+            "description": "Last day (inclusive); default series end."
+          },
+          {
+            "name": "points",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "maximum": 1001,
+              "minimum": 2,
+              "description": "LDC points returned for charting.",
+              "default": 101,
+              "title": "Points"
+            },
+            "description": "LDC points returned for charting."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AnalyticsResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/weather": {
+      "get": {
+        "tags": [
+          "weather"
+        ],
+        "summary": "Weather",
+        "operationId": "weather_weather_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/WeatherResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/forecast/dates": {
+      "get": {
+        "tags": [
+          "forecast"
+        ],
+        "summary": "Available Dates",
+        "operationId": "available_dates_forecast_dates_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ForecastDatesResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/forecast": {
+      "get": {
+        "tags": [
+          "forecast"
+        ],
+        "summary": "Forecast",
+        "operationId": "forecast_forecast_get",
+        "parameters": [
+          {
+            "name": "date",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "format": "date"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Test-set day; default latest.",
+              "title": "Date"
+            },
+            "description": "Test-set day; default latest."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ForecastResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/dsm": {
+      "get": {
+        "tags": [
+          "dsm"
+        ],
+        "summary": "Dsm",
+        "operationId": "dsm_dsm_get",
+        "parameters": [
+          {
+            "name": "deviation_mw",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "number",
+              "description": "Per 15-min block, ±.",
+              "default": 60.0,
+              "title": "Deviation Mw"
+            },
+            "description": "Per 15-min block, ±."
+          },
+          {
+            "name": "schedule_limit_mw",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "number",
+              "minimum": 0,
+              "default": 41.0,
+              "title": "Schedule Limit Mw"
+            }
+          },
+          {
+            "name": "normal_rate_per_mwh",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "number",
+              "minimum": 0,
+              "default": 5000.0,
+              "title": "Normal Rate Per Mwh"
+            }
+          },
+          {
+            "name": "excess_multiplier",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "number",
+              "minimum": 0,
+              "default": 1.5,
+              "title": "Excess Multiplier"
+            }
+          },
+          {
+            "name": "blocks",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "maximum": 96,
+              "minimum": 1,
+              "description": "Blocks the deviation lasts (4 = 1 hour).",
+              "default": 4,
+              "title": "Blocks"
+            },
+            "description": "Blocks the deviation lasts (4 = 1 hour)."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DsmResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/transformer": {
+      "get": {
+        "tags": [
+          "transformer"
+        ],
+        "summary": "Transformer",
+        "operationId": "transformer_transformer_get",
+        "parameters": [
+          {
+            "name": "hotspot_temp_c",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "number",
+              "maximum": 250,
+              "minimum": -50,
+              "description": "Winding hot-spot temperature; default = the deck's 40 °C full-load case.",
+              "default": 118.0,
+              "title": "Hotspot Temp C"
+            },
+            "description": "Winding hot-spot temperature; default = the deck's 40 °C full-load case."
+          },
+          {
+            "name": "hours",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "number",
+              "maximum": 8760,
+              "exclusiveMinimum": 0,
+              "description": "Hours held.",
+              "default": 1.0,
+              "title": "Hours"
+            },
+            "description": "Hours held."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TransformerResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "AnalyticsResponse": {
+        "properties": {
+          "provenance": {
+            "$ref": "#/components/schemas/ProvenanceKind"
+          },
+          "source": {
+            "type": "string",
+            "title": "Source"
+          },
+          "start": {
+            "type": "string",
+            "format": "date",
+            "title": "Start"
+          },
+          "end": {
+            "type": "string",
+            "format": "date",
+            "title": "End"
+          },
+          "load_factor": {
+            "type": "number",
+            "title": "Load Factor"
+          },
+          "par": {
+            "type": "number",
+            "title": "Par"
+          },
+          "p_avg_mw": {
+            "type": "number",
+            "title": "P Avg Mw"
+          },
+          "p_max_mw": {
+            "type": "number",
+            "title": "P Max Mw"
+          },
+          "n_blocks": {
+            "type": "integer",
+            "title": "N Blocks"
+          },
+          "load_duration_curve": {
+            "items": {
+              "$ref": "#/components/schemas/LdcPoint"
+            },
+            "type": "array",
+            "title": "Load Duration Curve"
+          }
+        },
+        "type": "object",
+        "required": [
+          "provenance",
+          "source",
+          "start",
+          "end",
+          "load_factor",
+          "par",
+          "p_avg_mw",
+          "p_max_mw",
+          "n_blocks",
+          "load_duration_curve"
+        ],
+        "title": "AnalyticsResponse"
+      },
+      "BandInfo": {
+        "properties": {
+          "method": {
+            "type": "string",
+            "title": "Method"
+          },
+          "confidence_level": {
+            "type": "number",
+            "title": "Confidence Level"
+          },
+          "empirical_test_coverage": {
+            "type": "number",
+            "title": "Empirical Test Coverage"
+          }
+        },
+        "type": "object",
+        "required": [
+          "method",
+          "confidence_level",
+          "empirical_test_coverage"
+        ],
+        "title": "BandInfo"
+      },
+      "DsmResponse": {
+        "properties": {
+          "provenance": {
+            "$ref": "#/components/schemas/ProvenanceKind"
+          },
+          "source": {
+            "type": "string",
+            "title": "Source"
+          },
+          "deviation_mw": {
+            "type": "number",
+            "title": "Deviation Mw"
+          },
+          "schedule_limit_mw": {
+            "type": "number",
+            "title": "Schedule Limit Mw"
+          },
+          "normal_rate_per_mwh": {
+            "type": "number",
+            "title": "Normal Rate Per Mwh"
+          },
+          "excess_multiplier": {
+            "type": "number",
+            "title": "Excess Multiplier"
+          },
+          "n_blocks": {
+            "type": "integer",
+            "title": "N Blocks"
+          },
+          "penalty_rupees": {
+            "type": "number",
+            "title": "Penalty Rupees"
+          },
+          "per_block_rupees": {
+            "items": {
+              "type": "number"
+            },
+            "type": "array",
+            "title": "Per Block Rupees"
+          },
+          "is_illustrative": {
+            "type": "boolean",
+            "const": true,
+            "title": "Is Illustrative"
+          },
+          "note": {
+            "type": "string",
+            "title": "Note"
+          }
+        },
+        "type": "object",
+        "required": [
+          "provenance",
+          "source",
+          "deviation_mw",
+          "schedule_limit_mw",
+          "normal_rate_per_mwh",
+          "excess_multiplier",
+          "n_blocks",
+          "penalty_rupees",
+          "per_block_rupees",
+          "is_illustrative",
+          "note"
+        ],
+        "title": "DsmResponse"
+      },
+      "ForecastBlock": {
+        "properties": {
+          "block": {
+            "type": "integer",
+            "maximum": 96.0,
+            "minimum": 1.0,
+            "title": "Block"
+          },
+          "ts_target": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Ts Target"
+          },
+          "predicted_mw": {
+            "type": "number",
+            "title": "Predicted Mw"
+          },
+          "p10_mw": {
+            "type": "number",
+            "title": "P10 Mw"
+          },
+          "p90_mw": {
+            "type": "number",
+            "title": "P90 Mw"
+          },
+          "actual_mw": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Actual Mw"
+          }
+        },
+        "type": "object",
+        "required": [
+          "block",
+          "ts_target",
+          "predicted_mw",
+          "p10_mw",
+          "p90_mw",
+          "actual_mw"
+        ],
+        "title": "ForecastBlock"
+      },
+      "ForecastDatesResponse": {
+        "properties": {
+          "dates": {
+            "items": {
+              "type": "string",
+              "format": "date"
+            },
+            "type": "array",
+            "title": "Dates"
+          },
+          "shap_dates": {
+            "additionalProperties": {
+              "type": "string",
+              "format": "date"
+            },
+            "type": "object",
+            "title": "Shap Dates"
+          }
+        },
+        "type": "object",
+        "required": [
+          "dates",
+          "shap_dates"
+        ],
+        "title": "ForecastDatesResponse"
+      },
+      "ForecastResponse": {
+        "properties": {
+          "provenance": {
+            "$ref": "#/components/schemas/ProvenanceKind"
+          },
+          "source": {
+            "type": "string",
+            "title": "Source"
+          },
+          "date": {
+            "type": "string",
+            "format": "date",
+            "title": "Date"
+          },
+          "issued_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Issued At"
+          },
+          "blocks": {
+            "items": {
+              "$ref": "#/components/schemas/ForecastBlock"
+            },
+            "type": "array",
+            "title": "Blocks"
+          },
+          "band": {
+            "$ref": "#/components/schemas/BandInfo"
+          },
+          "shap": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/ShapSummary"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Only for days with a precomputed TreeSHAP explanation."
+          }
+        },
+        "type": "object",
+        "required": [
+          "provenance",
+          "source",
+          "date",
+          "issued_at",
+          "blocks",
+          "band",
+          "shap"
+        ],
+        "title": "ForecastResponse"
+      },
+      "HTTPValidationError": {
+        "properties": {
+          "detail": {
+            "items": {
+              "$ref": "#/components/schemas/ValidationError"
+            },
+            "type": "array",
+            "title": "Detail"
+          }
+        },
+        "type": "object",
+        "title": "HTTPValidationError"
+      },
+      "LdcPoint": {
+        "properties": {
+          "rank_pct": {
+            "type": "number",
+            "title": "Rank Pct",
+            "description": "% of time the load is at or above load_mw."
+          },
+          "load_mw": {
+            "type": "number",
+            "title": "Load Mw"
+          }
+        },
+        "type": "object",
+        "required": [
+          "rank_pct",
+          "load_mw"
+        ],
+        "title": "LdcPoint"
+      },
+      "OverviewResponse": {
+        "properties": {
+          "provenance": {
+            "$ref": "#/components/schemas/ProvenanceKind"
+          },
+          "source": {
+            "type": "string",
+            "title": "Source"
+          },
+          "date": {
+            "type": "string",
+            "format": "date",
+            "title": "Date"
+          },
+          "issued_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Issued At",
+            "description": "Forecast origin: 23:45 the evening before."
+          },
+          "peak_mw": {
+            "type": "number",
+            "title": "Peak Mw"
+          },
+          "peak_time": {
+            "type": "string",
+            "title": "Peak Time",
+            "description": "Start of the peak 15-min block, HH:MM IST."
+          },
+          "peak_block": {
+            "type": "integer",
+            "maximum": 96.0,
+            "minimum": 1.0,
+            "title": "Peak Block"
+          },
+          "limit_mw": {
+            "type": "number",
+            "title": "Limit Mw"
+          },
+          "alert": {
+            "type": "boolean",
+            "title": "Alert",
+            "description": "True when peak_mw > limit_mw."
+          }
+        },
+        "type": "object",
+        "required": [
+          "provenance",
+          "source",
+          "date",
+          "issued_at",
+          "peak_mw",
+          "peak_time",
+          "peak_block",
+          "limit_mw",
+          "alert"
+        ],
+        "title": "OverviewResponse"
+      },
+      "ProvenanceKind": {
+        "type": "string",
+        "enum": [
+          "REAL",
+          "SYNTHETIC",
+          "FOREIGN",
+          "ILLUSTRATIVE"
+        ],
+        "title": "ProvenanceKind",
+        "description": "The four provenance kinds. Values are the exact strings persisted to\ndisk (parquet columns, JSON, etc.) and sent over the wire to the web app\n— do not rename without updating both sides of the stack."
+      },
+      "ScatterPoint": {
+        "properties": {
+          "date": {
+            "type": "string",
+            "format": "date",
+            "title": "Date"
+          },
+          "heat_index_c": {
+            "type": "number",
+            "title": "Heat Index C"
+          },
+          "load_mw": {
+            "type": "number",
+            "title": "Load Mw"
+          }
+        },
+        "type": "object",
+        "required": [
+          "date",
+          "heat_index_c",
+          "load_mw"
+        ],
+        "title": "ScatterPoint"
+      },
+      "ShapContributor": {
+        "properties": {
+          "feature": {
+            "type": "string",
+            "title": "Feature"
+          },
+          "mean_abs_shap_mw": {
+            "type": "number",
+            "title": "Mean Abs Shap Mw"
+          },
+          "mean_shap_mw": {
+            "type": "number",
+            "title": "Mean Shap Mw",
+            "description": "Signed: + pushes the forecast up."
+          }
+        },
+        "type": "object",
+        "required": [
+          "feature",
+          "mean_abs_shap_mw",
+          "mean_shap_mw"
+        ],
+        "title": "ShapContributor"
+      },
+      "ShapSummary": {
+        "properties": {
+          "day_label": {
+            "type": "string",
+            "title": "Day Label"
+          },
+          "top_contributors": {
+            "items": {
+              "$ref": "#/components/schemas/ShapContributor"
+            },
+            "type": "array",
+            "title": "Top Contributors"
+          }
+        },
+        "type": "object",
+        "required": [
+          "day_label",
+          "top_contributors"
+        ],
+        "title": "ShapSummary"
+      },
+      "TransformerResponse": {
+        "properties": {
+          "provenance": {
+            "$ref": "#/components/schemas/ProvenanceKind"
+          },
+          "source": {
+            "type": "string",
+            "title": "Source"
+          },
+          "hotspot_temp_c": {
+            "type": "number",
+            "title": "Hotspot Temp C"
+          },
+          "hours": {
+            "type": "number",
+            "title": "Hours"
+          },
+          "ageing_rate_v": {
+            "type": "number",
+            "title": "Ageing Rate V",
+            "description": "Relative ageing rate, 1.0 at 98 °C."
+          },
+          "life_hours_used": {
+            "type": "number",
+            "title": "Life Hours Used",
+            "description": "Equivalent hours of life at 98 °C."
+          },
+          "hours_elapsed": {
+            "type": "number",
+            "title": "Hours Elapsed"
+          }
+        },
+        "type": "object",
+        "required": [
+          "provenance",
+          "source",
+          "hotspot_temp_c",
+          "hours",
+          "ageing_rate_v",
+          "life_hours_used",
+          "hours_elapsed"
+        ],
+        "title": "TransformerResponse"
+      },
+      "ValidationError": {
+        "properties": {
+          "loc": {
+            "items": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "integer"
+                }
+              ]
+            },
+            "type": "array",
+            "title": "Location"
+          },
+          "msg": {
+            "type": "string",
+            "title": "Message"
+          },
+          "type": {
+            "type": "string",
+            "title": "Error Type"
+          },
+          "input": {
+            "title": "Input"
+          },
+          "ctx": {
+            "type": "object",
+            "title": "Context"
+          }
+        },
+        "type": "object",
+        "required": [
+          "loc",
+          "msg",
+          "type"
+        ],
+        "title": "ValidationError"
+      },
+      "WeatherResponse": {
+        "properties": {
+          "provenance": {
+            "$ref": "#/components/schemas/ProvenanceKind"
+          },
+          "source": {
+            "type": "string",
+            "title": "Source"
+          },
+          "beta_mw_per_c": {
+            "type": "number",
+            "title": "Beta Mw Per C"
+          },
+          "intercept_mw": {
+            "type": "number",
+            "title": "Intercept Mw"
+          },
+          "r_squared": {
+            "type": "number",
+            "title": "R Squared"
+          },
+          "n_blocks": {
+            "type": "integer",
+            "title": "N Blocks",
+            "description": "15-min blocks the OLS fit used."
+          },
+          "scatter_granularity": {
+            "type": "string",
+            "const": "daily_mean",
+            "title": "Scatter Granularity"
+          },
+          "scatter": {
+            "items": {
+              "$ref": "#/components/schemas/ScatterPoint"
+            },
+            "type": "array",
+            "title": "Scatter"
+          }
+        },
+        "type": "object",
+        "required": [
+          "provenance",
+          "source",
+          "beta_mw_per_c",
+          "intercept_mw",
+          "r_squared",
+          "n_blocks",
+          "scatter_granularity",
+          "scatter"
+        ],
+        "title": "WeatherResponse"
+      }
+    }
+  }
+}
