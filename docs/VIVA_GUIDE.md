@@ -28,7 +28,8 @@ Isse ratt lo. Panel jab bhi bole "one line mein / two minutes mein batao," yehi 
 | Final test MAPE (LightGBM, saare test origins × horizons 1–96, n = 1,672,080 forecasts) | **3.93%** (3.926%) | REAL backtest |
 | Seasonal-naive (same block kal) test MAPE | 5.16%, matlab model 24% better | REAL backtest |
 | Train / val / test MAPE | 2.29% / 4.29% / 3.93% | REAL |
-| Horizon ke hisaab se (test) | h1–12: 3.30%, h85–96: 4.38% | REAL |
+| Accuracy (100 − MAPE): train / val / test | 97.71% / 95.71% / **96.07%** (test ≈ 96%) | REAL |
+| Horizon ke hisaab se (test) | h1–4: 3.21%, h5–24: 3.48%, h25–48: 3.84%, h49–96: 4.22% (naive har bucket pe ~5.16%). Purane grouping mein h1–12: 3.30%, h85–96: 4.38%: same model, alag horizon grouping | REAL |
 | P10–P90 band | **80%** interval (90% nahi). Target 80%, test coverage **84.4%** (usi 1,672,080 test forecasts pe; yeh count forecasts ka hai, blocks ka nahi), mean width 602 MW | REAL backtest |
 | Heat sensitivity β | **112.0 MW/°C** (112.044), r² = **0.61**, intercept 1,342 MW. +3 °C heat index ≈ +336 MW | REAL, apna OLS fit, 96,398 blocks |
 | CSE 2025 | Heat index Delhi ke **daily peak** variation ka 67% explain karta hai. Yeh CSE ka metric hai, humara nahi | External |
@@ -42,7 +43,7 @@ Isse ratt lo. Panel jab bhi bole "one line mein / two minutes mein batao," yehi 
 | Pichhla Delhi record (2024) | **[TODO: verify]** 8,656 MW, 19 Jun 2024 (external sources; report mein ref [2] ke saath, bina date ke; 19 June report se nahi aata). Hamare data ke dono max isse thoda neeche hain | External |
 | Delhi all-time peak | 8,748 MW, 29 Jun 2026 (Delhi SLDC). **Dataset ke bahar hai**, sirf Overview alert threshold hai | External |
 | Diwali (2025-10-20) | Day MAPE 8.65%, band coverage 49.3%. Sabse saaf weakness | REAL |
-| h = 1–2 (15–30 min aage) | h = 1 pe simple persistence ~1.4% vs model ~3.1%. 23:45 origin pe h = 1–2 forecast din ke 00:00 aur 00:15 blocks hain, yaani dashboard ke schedule ke andar. Documented limitation | REAL |
+| h = 1–2 (15–30 min aage) | h = 1 pe simple persistence 1.44% vs model 3.18% (h = 2: 2.77% vs 3.20%). 23:45 origin pe h = 1–2 forecast din ke 00:00 aur 00:15 blocks hain, yaani dashboard ke schedule ke andar. Documented limitation | REAL |
 | Ablation (pass-1 improvement) | 4.96% se 4.02% (−0.94 pp, iid-day 95% CI [−1.20, −0.68]; week-block bootstrap ~2x wide). Is −0.94 pp ka: lags ~64% (~0.61 pp; order ke hisaab se 54–74%), cleaning ~25% (~0.23 pp), re-tuning ~10% (~0.10 pp) | REAL |
 
 **Ek chhota gotcha:** 3.93%, 3.92% aur 3.95% teeno sahi hain, bas alag row sets pe hain. 3.93% poore test set pe hai (headline yahi hai). 3.92% ladder ke common real-row set pe hai (n = 1,267,749). 3.95% ablation ke common row set pe hai (n = 1,279,461). Agar koi poochhe, yahi bolna.
@@ -760,7 +761,7 @@ Yeh section sabse naya hai. Panel ko jab pata chalega ki tumne apne hi model mei
 ### C. Short horizon, Diwali, coverage
 
 **Q15. "h = 1 pe simple persistence tumhare model ko kyun hara deta hai?"**
-→ 15 minute mein load bahut kam badalta hai (lag-1-block ACF 0.998), isliye "agla block = abhi wala block" bolna hi h = 1 pe ~1.4% MAPE de deta hai, jabki model ~3.1% deta hai. Humara single multi-horizon model poore 96 blocks ke liye ek saath optimise hua hai. 23:45 origin pe h = 1–2 forecast din ke 00:00 aur 00:15 blocks hain, yaani yeh dashboard ke schedule ke **andar** hain, isliye yeh real limitation hai. Hum abhi persistence ke saath blend nahi karte; fix hai un blocks pe persistence ya alag short-horizon model lagana, aur yeh documented limitation hai. (Dhyan rakhna: model **seasonal-naive** ko har horizon pe beat karta hai; h = 1–2 pe sirf **persistence** se haarta hai. Dono alag baselines hain.)
+→ 15 minute mein load bahut kam badalta hai (lag-1-block ACF 0.998), isliye "agla block = abhi wala block" bolna hi h = 1 pe 1.44% MAPE de deta hai, jabki model 3.18% deta hai. Humara single multi-horizon model poore 96 blocks ke liye ek saath optimise hua hai. 23:45 origin pe h = 1–2 forecast din ke 00:00 aur 00:15 blocks hain, yaani yeh dashboard ke schedule ke **andar** hain, isliye yeh real limitation hai. Hum abhi persistence ke saath blend nahi karte; fix hai un blocks pe persistence ya alag short-horizon model lagana, aur yeh documented limitation hai. (Dhyan rakhna: model **seasonal-naive** ko har horizon pe beat karta hai; h = 1–2 pe sirf **persistence** se haarta hai. Dono alag baselines hain.)
 
 **Q16. "Diwali pe 8.65% error kyun? Yeh bahut zyada hai."**
 → Haan, yeh sabse saaf weakness hai. Diwali (2025-10-20) pe actual load 4-week same-block average (5,530 MW) se ~2,000 MW neeche tha. Model ne holiday dekha (`target_is_holiday` second-largest driver, 12:30 pe −272 MW), lekin effect bahut chhota tha, isliye forecast poore din overshoot karta raha: day MAPE 8.65% aur sirf 49.3% blocks band ke andar. Wajah yeh hai ki holiday effect bahut kam training holidays aur ek single indicator se seekha gaya. Fix idea festival-specific features (Diwali window, festival type) hain, lekin abhi yeh sirf diagnosis hai, implement nahi kiya.

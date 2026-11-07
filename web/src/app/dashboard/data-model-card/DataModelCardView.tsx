@@ -249,7 +249,11 @@ const MODEL_DETAILS: { label: string; value: string }[] = [
     value:
       "Split-conformal (MAPIE 1.6, absolute score), calibrated on all validation rows. Constant width.",
   },
-  { label: "Error by horizon (test)", value: "3.30% at h1–12, rising to 4.38% at h85–96." },
+  {
+    label: "Error by horizon (test)",
+    value:
+      "3.21% at h1–4, 3.48% at h5–24, 3.84% at h25–48, 4.22% at h49–96 (naive ~5.16% throughout).",
+  },
   {
     label: "Largest feature",
     value: "tlag_1day (same block yesterday): 66.5% of gain importance.",
@@ -549,7 +553,7 @@ const LIMITATIONS: { title: string; body: string }[] = [
   },
   {
     title: "Persistence beats the model at the shortest horizons.",
-    body: "At h = 1–2, simply repeating the latest block is more accurate: at h = 1 it scores ~1.4% MAPE against the model's ~3.1%. With the 23:45 origin these are the 00:00 and 00:15 blocks of the forecast day, so they are inside the dashboard's schedule. Using persistence (or a short-horizon model) there would fix it; not done.",
+    body: "At h = 1–2, simply repeating the latest block is more accurate: at h = 1 it scores 1.44% MAPE against the model's 3.18%. With the 23:45 origin these are the 00:00 and 00:15 blocks of the forecast day, so they are inside the dashboard's schedule. Using persistence (or a short-horizon model) there would fix it; not done.",
   },
   {
     title: "Diwali was the weakest of the four SHAP example days.",

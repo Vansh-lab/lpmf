@@ -4,24 +4,33 @@ Final model: single multi-horizon LightGBM (horizon as a feature, 96 blocks
 ahead), `models/artifacts/lightgbm_model.txt`. Tuned with Optuna (25 trials,
 val-MAPE objective); final fit on the full train set, early-stopped on val.
 
-**Final test MAPE: 3.93%** (test = 2025-07-12 23:45 .. 2026-01-12, i.e. first
+**Final test MAPE: 3.93%, i.e. test accuracy 96.07%** (test = 2025-07-12 23:45 .. 2026-01-12, i.e. first
 forecast origin 12 Jul 23:45 and first target day 13 Jul; every origin x horizon
 1-96, n = 1,672,080, not only the dashboard's 23:45 day-ahead view). The test split
-was never used for hyperparameter tuning or early stopping, but test-set error
-diagnostics (where the first LightGBM lost to seasonal-naive) did inform the
-feature design, so test is no longer a fully untouched holdout and this figure
-may be slightly optimistic (caveat 3).
+was never used for hyperparameter tuning or early stopping. **Caveat:** the
+feature design was not blind to test. The target-aligned lag features were
+designed after reading test-set error diagnostics (where the first LightGBM lost
+to seasonal-naive at long horizons), so test is no longer a fully untouched
+holdout and this figure may be slightly optimistic (caveat 3).
 
 ## Train / val / test
 
-| Split | Rows (origin x horizon) | LightGBM MAPE | Seasonal-naive (`tlag_1day`) MAPE | Gain over naive |
-|---|---|---|---|---|
-| Train | 2,955,408 (every 2nd origin) | 2.29% | 5.44% | 58% |
-| Val | 1,657,296 | 4.29% | 5.97% | 28% |
-| Test | 1,672,080 | **3.93%** | 5.16% | 24% |
+| Split | Rows (origin x horizon) | LightGBM MAPE | Accuracy (100 − MAPE) | Seasonal-naive (`tlag_1day`) MAPE | Gain over naive |
+|---|---|---|---|---|---|
+| Train | 5,910,864 | 2.29% | 97.71% | 5.44% | 58% |
+| Val | 1,657,296 | 4.29% | 95.71% | 5.97% | 28% |
+| Test | 1,672,080 | **3.93%** | **96.07%** | 5.16% | 24% |
 
-MAPE by horizon band: h1-12 is 3.30% on test (3.58% val); h85-96 is 4.38% on
-test (4.77% val). Error rises with horizon, as expected.
+Test MAPE by horizon (the buckets used in the report, deck and script):
+h1-4 3.21%, h5-24 3.48%, h25-48 3.84%, h49-96 4.22%; seasonal-naive is about
+5.16% in every bucket. Error rises with horizon, as expected.
+
+Same model, different horizon grouping: an earlier version of this file
+reported h1-12 = 3.30% (3.58% val) and h85-96 = 4.38% (4.77% val). Those
+numbers are still correct for those bands; they are not a different result.
+
+At h = 1 simple persistence (next block = last block) beats the model:
+1.44% vs 3.18% (h = 2: 2.77% vs 3.20%).
 
 ## Overfitting check — verdict: no harmful overfitting
 
@@ -87,7 +96,7 @@ horizon.
 
 Read alongside three caveats. Removing the leaks improved the score rather than
 hurting it because the old imputer also produced wrong (inflated) labels. At
-h = 1-2 simple persistence still beats the model (h=1: ~1.4% vs ~3.1%). The
+h = 1-2 simple persistence still beats the model (h = 1: 1.44% vs 3.18%). The
 test split informed the feature design (caveat 3).
 
 ## Ablation results
@@ -180,7 +189,7 @@ API or dashboard.
 
 MAPIE 1.6 `SplitConformalRegressor`, prefit, calibrated on all val
 (origin, horizon) rows (1,657,296) and evaluated on test (1,672,080).
-P10-P90 is an **80%** central interval (not the "~90%" in the PPT).
+P10-P90 is an **80%** central interval (an early deck draft labelled it "~90%"; the deck now says 80%).
 Output: `models/artifacts/conformal_bands.parquet` (test rows; primary
 `lower_mw`/`upper_mw`, plus a relative-score variant `*_rel`) and
 `conformal_summary.json`.
