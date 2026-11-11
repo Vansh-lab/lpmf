@@ -532,6 +532,63 @@ export interface components {
       /** Load Mw */
       load_mw: number;
     };
+    /** SgccDataset */
+    SgccDataset: {
+      /** N Consumers */
+      n_consumers: number;
+      /** N Days */
+      n_days: number;
+      /** Theft Rate */
+      theft_rate: number;
+    };
+    /** SgccMetrics */
+    SgccMetrics: {
+      /** Auc Roc */
+      auc_roc: number;
+      /** Pr Auc */
+      pr_auc: number;
+      /** Precision */
+      precision: number;
+      /** Recall */
+      recall: number;
+      /** F1 */
+      f1: number;
+      /** Accuracy */
+      accuracy: number;
+      /** All Normal Baseline Accuracy */
+      all_normal_baseline_accuracy: number;
+      /** Map At 100 */
+      map_at_100: number;
+      /** Map At 200 */
+      map_at_200: number;
+    };
+    /** SgccSummary */
+    SgccSummary: {
+      provenance: components["schemas"]["ProvenanceKind"];
+      /**
+       * Note
+       * @description Required FOREIGN-data disclosure for this page.
+       */
+      note: string;
+      dataset: components["schemas"]["SgccDataset"];
+      logreg_test: components["schemas"]["SgccMetrics"];
+      lightgbm_test: components["schemas"]["SgccMetrics"];
+      /** Lightgbm Train Auc Roc */
+      lightgbm_train_auc_roc: number;
+      /** Lightgbm Val Auc Roc */
+      lightgbm_val_auc_roc: number;
+      /**
+       * Paper Test Auc Roc
+       * @description Zheng et al. 2018, as stated in the brief — not independently verified.
+       */
+      paper_test_auc_roc: number;
+      /** Kmeans Best K */
+      kmeans_best_k: number;
+      /** Kmeans Silhouette */
+      kmeans_silhouette: {
+        [key: string]: number;
+      };
+    };
     /** ShapContributor */
     ShapContributor: {
       /** Feature */
@@ -651,6 +708,8 @@ export interface components {
        * @constant
        */
       is_synthetic: true;
+      /** @description Real SGCC benchmark model-ladder + segments summary, if the pipeline has been run; None otherwise. Separate from the synthetic demo fleet above, which this page demos live. */
+      sgcc?: components["schemas"]["SgccSummary"] | null;
     };
     /** TodBillResponse */
     TodBillResponse: {

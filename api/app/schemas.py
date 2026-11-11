@@ -169,6 +169,39 @@ class MeterCluster(BaseModel):
     meter_ids: list[str]
 
 
+class SgccDataset(BaseModel):
+    n_consumers: int
+    n_days: int
+    theft_rate: float
+
+
+class SgccMetrics(BaseModel):
+    auc_roc: float
+    pr_auc: float
+    precision: float
+    recall: float
+    f1: float
+    accuracy: float
+    all_normal_baseline_accuracy: float
+    map_at_100: float
+    map_at_200: float
+
+
+class SgccSummary(BaseModel):
+    provenance: ProvenanceKind
+    note: str = Field(description="Required FOREIGN-data disclosure for this page.")
+    dataset: SgccDataset
+    logreg_test: SgccMetrics
+    lightgbm_test: SgccMetrics
+    lightgbm_train_auc_roc: float
+    lightgbm_val_auc_roc: float
+    paper_test_auc_roc: float = Field(
+        description="Zheng et al. 2018, as stated in the brief — not independently verified."
+    )
+    kmeans_best_k: int
+    kmeans_silhouette: dict[str, float]
+
+
 class TheftSegmentsResponse(Tagged):
     n_meters: int
     n_theft_ground_truth: int
@@ -177,6 +210,12 @@ class TheftSegmentsResponse(Tagged):
     ranking: list[SuspiciousMeter]
     clusters: list[MeterCluster]
     is_synthetic: Literal[True]
+    sgcc: SgccSummary | None = Field(
+        default=None,
+        description="Real SGCC benchmark model-ladder + segments summary, if the "
+        "pipeline has been run; None otherwise. Separate from the synthetic demo "
+        "fleet above, which this page demos live.",
+    )
 
 
 class IexPriceRange(BaseModel):

@@ -15,12 +15,15 @@ from lpmf.engines.theft_segments import (
     rank_suspicious_meters,
     segment_load_shapes,
 )
+from lpmf.sgcc.summary import load_sgcc_summary
 
-from app.schemas import MeterCluster, SuspiciousMeter, TheftSegmentsResponse
+from app.config import settings
+from app.schemas import MeterCluster, SgccSummary, SuspiciousMeter, TheftSegmentsResponse
 
 router = APIRouter()
 
 SOURCE = "Synthetic smart-meter fleet (lpmf.engines.theft_segments) — a demo, not real consumers"
+SGCC_ARTIFACTS_DIR = settings.repo_root / "models" / "artifacts" / "sgcc"
 
 
 @lru_cache(maxsize=16)
@@ -47,6 +50,8 @@ def theft_segments(
     except ValueError as exc:
         raise HTTPException(422, str(exc)) from exc
 
+    sgcc = load_sgcc_summary(SGCC_ARTIFACTS_DIR)
+
     return TheftSegmentsResponse(
         n_meters=n_meters,
         n_theft_ground_truth=n_theft,
@@ -57,4 +62,5 @@ def theft_segments(
         is_synthetic=True,
         provenance=ranked["provenance"],
         source=SOURCE,
+        sgcc=SgccSummary(**sgcc) if sgcc else None,
     )

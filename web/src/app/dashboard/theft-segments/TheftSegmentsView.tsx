@@ -17,6 +17,7 @@ import { KpiCard } from "@/components/dashboard/KpiCard";
 import { Panel } from "@/components/dashboard/Panel";
 import { formatPct } from "@/lib/format";
 import { api } from "@/lib/api";
+import type { TheftSegmentsResponse } from "@/lib/api";
 import { useApi } from "@/lib/useApi";
 
 const CLUSTER_COLORS = [chartColors.amber, chartColors.green, chartColors.red, chartColors.muted];
@@ -148,9 +149,109 @@ export function TheftSegmentsView() {
               grouping meters by <em>when</em> they use energy.
             </p>
           </Panel>
+
+          {r.sgcc && <SgccSection sgcc={r.sgcc} />}
         </>
       )}
     </ApiBoundary>
+  );
+}
+
+function SgccSection({ sgcc }: { sgcc: NonNullable<TheftSegmentsResponse["sgcc"]> }) {
+  const lgb = sgcc.lightgbm_test;
+  const lr = sgcc.logreg_test;
+  return (
+    <>
+      <div
+        role="note"
+        className="rounded-lg border-2 border-[color:var(--lpmf-green)] bg-[color:var(--lpmf-green)]/10 p-4"
+      >
+        <p className="text-sm font-semibold uppercase tracking-wide text-[color:var(--lpmf-green-text)]">
+          Trained on the real SGCC benchmark (FOREIGN data)
+        </p>
+        <p className="mt-1 text-sm text-[color:var(--foreground)]">{sgcc.note}</p>
+      </div>
+
+      <Panel
+        title="Model ladder: real theft detection (SGCC consumers, test set, scored once)"
+        provenance={sgcc.provenance}
+        source="Zheng et al., IEEE TII 2018 (SGCC benchmark)"
+      >
+        <div className="mb-4 grid gap-4 md:grid-cols-4">
+          <KpiCard
+            label="Consumers"
+            value={sgcc.dataset.n_consumers.toLocaleString()}
+            hint={`${sgcc.dataset.n_days} days, ${formatPct(sgcc.dataset.theft_rate, 2)} theft rate`}
+          />
+          <KpiCard
+            size="lg"
+            label="LightGBM test AUC-ROC"
+            value={lgb.auc_roc.toFixed(3)}
+            hint={`Paper (stated, not independently verified): ~${sgcc.paper_test_auc_roc}`}
+          />
+          <KpiCard
+            label="Train / Val AUC-ROC"
+            value={`${sgcc.lightgbm_train_auc_roc.toFixed(3)} / ${sgcc.lightgbm_val_auc_roc.toFixed(3)}`}
+            hint="Overfitting check: val≈test, so the train/val gap is model capacity, not leakage."
+          />
+          <KpiCard
+            label="K-means best k"
+            value={sgcc.kmeans_best_k.toString()}
+            hint={`Silhouette (test): ${sgcc.kmeans_silhouette.test?.toFixed(3) ?? "—"}`}
+          />
+        </div>
+        <div className="overflow-x-auto">
+          <table className="w-full text-left text-sm">
+            <thead>
+              <tr className="text-[11px] uppercase tracking-wide text-[color:var(--lpmf-muted)]">
+                <th className="pb-2 pr-4">Model</th>
+                <th className="pb-2 pr-4">AUC-ROC</th>
+                <th className="pb-2 pr-4">PR-AUC</th>
+                <th className="pb-2 pr-4">Precision</th>
+                <th className="pb-2 pr-4">Recall</th>
+                <th className="pb-2 pr-4">F1</th>
+                <th className="pb-2 pr-4">Accuracy</th>
+                <th className="pb-2 pr-4">All-normal baseline</th>
+                <th className="pb-2 pr-4">MAP@100</th>
+                <th className="pb-2">MAP@200</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr className="border-t border-[color:var(--border-faint)]">
+                <td className="py-1.5 pr-4">Logistic regression</td>
+                <td className="lpmf-mono py-1.5 pr-4">{lr.auc_roc.toFixed(3)}</td>
+                <td className="lpmf-mono py-1.5 pr-4">{lr.pr_auc.toFixed(3)}</td>
+                <td className="lpmf-mono py-1.5 pr-4">{lr.precision.toFixed(3)}</td>
+                <td className="lpmf-mono py-1.5 pr-4">{lr.recall.toFixed(3)}</td>
+                <td className="lpmf-mono py-1.5 pr-4">{lr.f1.toFixed(3)}</td>
+                <td className="lpmf-mono py-1.5 pr-4">{formatPct(lr.accuracy, 1)}</td>
+                <td className="lpmf-mono py-1.5 pr-4">{formatPct(lr.all_normal_baseline_accuracy, 1)}</td>
+                <td className="lpmf-mono py-1.5 pr-4">{lr.map_at_100.toFixed(2)}</td>
+                <td className="lpmf-mono py-1.5">{lr.map_at_200.toFixed(2)}</td>
+              </tr>
+              <tr className="border-t border-[color:var(--border-faint)]">
+                <td className="py-1.5 pr-4 font-medium">LightGBM (Optuna, val-tuned)</td>
+                <td className="lpmf-mono py-1.5 pr-4">{lgb.auc_roc.toFixed(3)}</td>
+                <td className="lpmf-mono py-1.5 pr-4">{lgb.pr_auc.toFixed(3)}</td>
+                <td className="lpmf-mono py-1.5 pr-4">{lgb.precision.toFixed(3)}</td>
+                <td className="lpmf-mono py-1.5 pr-4">{lgb.recall.toFixed(3)}</td>
+                <td className="lpmf-mono py-1.5 pr-4">{lgb.f1.toFixed(3)}</td>
+                <td className="lpmf-mono py-1.5 pr-4">{formatPct(lgb.accuracy, 1)}</td>
+                <td className="lpmf-mono py-1.5 pr-4">{formatPct(lgb.all_normal_baseline_accuracy, 1)}</td>
+                <td className="lpmf-mono py-1.5 pr-4">{lgb.map_at_100.toFixed(2)}</td>
+                <td className="lpmf-mono py-1.5">{lgb.map_at_200.toFixed(2)}</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+        <p className="mt-3 text-xs text-[color:var(--lpmf-muted)]">
+          Threshold chosen on validation, test scored exactly once. &ldquo;All-normal baseline&rdquo;
+          is the accuracy of always predicting &ldquo;not theft&rdquo; — higher than either model&apos;s
+          accuracy because of the ~8.5% class imbalance, which is why accuracy alone is not the
+          headline metric here. MAP@k is precision@k on the ranked list (the paper&apos;s own metric).
+        </p>
+      </Panel>
+    </>
   );
 }
 

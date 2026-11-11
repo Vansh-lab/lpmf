@@ -314,6 +314,18 @@ def test_theft_invalid_inputs_are_422(query):
     _get(f"/theft?{query}", 422)
 
 
+def test_theft_includes_real_sgcc_summary_when_the_pipeline_has_run():
+    body = _get("/theft")
+    sgcc = body["sgcc"]
+    if sgcc is None:
+        pytest.skip("models/artifacts/sgcc/results.json not present in this environment")
+    assert sgcc["provenance"] == "FOREIGN"
+    assert "Delhi DISCOM meter data would be needed for deployment" in sgcc["note"]
+    assert sgcc["dataset"]["n_consumers"] > 0
+    assert sgcc["lightgbm_test"]["auc_roc"] > sgcc["lightgbm_val_auc_roc"] - 0.2
+    assert 0 < sgcc["kmeans_silhouette"]["train"] <= 1
+
+
 # --- losses ---------------------------------------------------------------------
 
 

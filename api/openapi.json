@@ -1523,6 +1523,141 @@
         ],
         "title": "ScatterPoint"
       },
+      "SgccDataset": {
+        "properties": {
+          "n_consumers": {
+            "type": "integer",
+            "title": "N Consumers"
+          },
+          "n_days": {
+            "type": "integer",
+            "title": "N Days"
+          },
+          "theft_rate": {
+            "type": "number",
+            "title": "Theft Rate"
+          }
+        },
+        "type": "object",
+        "required": [
+          "n_consumers",
+          "n_days",
+          "theft_rate"
+        ],
+        "title": "SgccDataset"
+      },
+      "SgccMetrics": {
+        "properties": {
+          "auc_roc": {
+            "type": "number",
+            "title": "Auc Roc"
+          },
+          "pr_auc": {
+            "type": "number",
+            "title": "Pr Auc"
+          },
+          "precision": {
+            "type": "number",
+            "title": "Precision"
+          },
+          "recall": {
+            "type": "number",
+            "title": "Recall"
+          },
+          "f1": {
+            "type": "number",
+            "title": "F1"
+          },
+          "accuracy": {
+            "type": "number",
+            "title": "Accuracy"
+          },
+          "all_normal_baseline_accuracy": {
+            "type": "number",
+            "title": "All Normal Baseline Accuracy"
+          },
+          "map_at_100": {
+            "type": "number",
+            "title": "Map At 100"
+          },
+          "map_at_200": {
+            "type": "number",
+            "title": "Map At 200"
+          }
+        },
+        "type": "object",
+        "required": [
+          "auc_roc",
+          "pr_auc",
+          "precision",
+          "recall",
+          "f1",
+          "accuracy",
+          "all_normal_baseline_accuracy",
+          "map_at_100",
+          "map_at_200"
+        ],
+        "title": "SgccMetrics"
+      },
+      "SgccSummary": {
+        "properties": {
+          "provenance": {
+            "$ref": "#/components/schemas/ProvenanceKind"
+          },
+          "note": {
+            "type": "string",
+            "title": "Note",
+            "description": "Required FOREIGN-data disclosure for this page."
+          },
+          "dataset": {
+            "$ref": "#/components/schemas/SgccDataset"
+          },
+          "logreg_test": {
+            "$ref": "#/components/schemas/SgccMetrics"
+          },
+          "lightgbm_test": {
+            "$ref": "#/components/schemas/SgccMetrics"
+          },
+          "lightgbm_train_auc_roc": {
+            "type": "number",
+            "title": "Lightgbm Train Auc Roc"
+          },
+          "lightgbm_val_auc_roc": {
+            "type": "number",
+            "title": "Lightgbm Val Auc Roc"
+          },
+          "paper_test_auc_roc": {
+            "type": "number",
+            "title": "Paper Test Auc Roc",
+            "description": "Zheng et al. 2018, as stated in the brief — not independently verified."
+          },
+          "kmeans_best_k": {
+            "type": "integer",
+            "title": "Kmeans Best K"
+          },
+          "kmeans_silhouette": {
+            "additionalProperties": {
+              "type": "number"
+            },
+            "type": "object",
+            "title": "Kmeans Silhouette"
+          }
+        },
+        "type": "object",
+        "required": [
+          "provenance",
+          "note",
+          "dataset",
+          "logreg_test",
+          "lightgbm_test",
+          "lightgbm_train_auc_roc",
+          "lightgbm_val_auc_roc",
+          "paper_test_auc_roc",
+          "kmeans_best_k",
+          "kmeans_silhouette"
+        ],
+        "title": "SgccSummary"
+      },
       "ShapContributor": {
         "properties": {
           "feature": {
@@ -1785,6 +1920,17 @@
             "type": "boolean",
             "const": true,
             "title": "Is Synthetic"
+          },
+          "sgcc": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/SgccSummary"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Real SGCC benchmark model-ladder + segments summary, if the pipeline has been run; None otherwise. Separate from the synthetic demo fleet above, which this page demos live."
           }
         },
         "type": "object",
