@@ -16,7 +16,7 @@ from fastapi.responses import JSONResponse
 from app import data
 from app.config import settings
 from app.data import DataNotBuilt
-from app.routers import analytics, dsm, forecast, overview, transformer, weather
+from app.routers import analytics, dsm, forecast, losses, overview, transformer, weather
 
 logger = logging.getLogger(__name__)
 
@@ -63,3 +63,4 @@ app.include_router(weather.router, prefix="/weather", tags=["weather"])
 app.include_router(forecast.router, prefix="/forecast", tags=["forecast"])
 app.include_router(dsm.router, prefix="/dsm", tags=["dsm"])
 app.include_router(transformer.router, prefix="/transformer", tags=["transformer"])
+app.include_router(losses.router, prefix="/losses", tags=["losses"])

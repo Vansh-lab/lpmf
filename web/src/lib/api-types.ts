@@ -140,6 +140,23 @@ export interface paths {
     patch?: never;
     trace?: never;
   };
+  "/losses": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    /** Losses */
+    get: operations["losses_losses_get"];
+    put?: never;
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
 }
 export type webhooks = Record<string, never>;
 export interface components {
@@ -171,6 +188,18 @@ export interface components {
       n_blocks: number;
       /** Load Duration Curve */
       load_duration_curve: components["schemas"]["LdcPoint"][];
+    };
+    /** AtcBenchmark */
+    AtcBenchmark: {
+      /** At C Loss Pct */
+      at_c_loss_pct: number;
+      /** Year */
+      year: string;
+      /** Note */
+      note: string;
+      provenance: components["schemas"]["ProvenanceKind"];
+      /** Source */
+      source: string;
     };
     /** BandInfo */
     BandInfo: {
@@ -270,6 +299,34 @@ export interface components {
       rank_pct: number;
       /** Load Mw */
       load_mw: number;
+    };
+    /** LossesResponse */
+    LossesResponse: {
+      provenance: components["schemas"]["ProvenanceKind"];
+      /** Source */
+      source: string;
+      /** Active Power Kw */
+      active_power_kw: number;
+      /** Pf1 */
+      pf1: number;
+      /** Pf2 */
+      pf2: number;
+      /** Capacitor Kvar */
+      capacitor_kvar: number;
+      /** Current A */
+      current_a: number;
+      /** Resistance Ohm */
+      resistance_ohm: number;
+      /** Loss Kw */
+      loss_kw: number;
+      /** Loss Reduction Pct */
+      loss_reduction_pct: number;
+      /**
+       * Is Illustrative
+       * @constant
+       */
+      is_illustrative: true;
+      at_c_benchmark: components["schemas"]["AtcBenchmark"];
     };
     /** OverviewResponse */
     OverviewResponse: {
@@ -633,6 +690,41 @@ export interface operations {
         };
         content: {
           "application/json": components["schemas"]["TransformerResponse"];
+        };
+      };
+      /** @description Validation Error */
+      422: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["HTTPValidationError"];
+        };
+      };
+    };
+  };
+  losses_losses_get: {
+    parameters: {
+      query?: {
+        active_power_kw?: number;
+        pf1?: number;
+        pf2?: number;
+        current_a?: number;
+        resistance_ohm?: number;
+      };
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      /** @description Successful Response */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["LossesResponse"];
         };
       };
       /** @description Validation Error */

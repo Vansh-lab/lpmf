@@ -180,6 +180,31 @@ def test_transformer_out_of_range_inputs_are_422(query):
 
 
 def test_every_page_response_carries_provenance():
-    for url in ("/dsm", "/transformer"):
+    for url in ("/dsm", "/transformer", "/losses"):
         assert _get(url)["provenance"] in {"REAL", "SYNTHETIC", "FOREIGN", "ILLUSTRATIVE"}
     assert not math.isnan(_get("/dsm")["penalty_rupees"])
+
+
+# --- losses ---------------------------------------------------------------------
+
+
+def test_losses_defaults_match_the_pf_correction_formula():
+    body = _get("/losses")
+    assert body["capacitor_kvar"] == pytest.approx(553.233, rel=1e-4)
+    assert body["is_illustrative"] is True and body["provenance"] == "ILLUSTRATIVE"
+    assert body["at_c_benchmark"]["provenance"] == "FOREIGN"
+    assert body["at_c_benchmark"]["at_c_loss_pct"] == pytest.approx(15.37)
+
+
+def test_losses_current_drop_reduces_i2r_loss():
+    body = _get("/losses?pf1=0.8&pf2=1.0&current_a=100&resistance_ohm=0.5")
+    assert body["loss_kw"] == pytest.approx(15.0)
+    assert body["loss_reduction_pct"] == pytest.approx(36.0)
+
+
+@pytest.mark.parametrize(
+    "query",
+    ["pf1=0", "pf2=1.5", "pf1=0.95&pf2=0.8", "current_a=-1", "resistance_ohm=-1"],
+)
+def test_losses_invalid_inputs_are_422(query):
+    _get(f"/losses?{query}", 422)

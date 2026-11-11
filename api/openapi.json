@@ -421,6 +421,96 @@
           }
         }
       }
+    },
+    "/losses": {
+      "get": {
+        "tags": [
+          "losses"
+        ],
+        "summary": "Losses",
+        "operationId": "losses_losses_get",
+        "parameters": [
+          {
+            "name": "active_power_kw",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "number",
+              "minimum": 0,
+              "default": 1000.0,
+              "title": "Active Power Kw"
+            }
+          },
+          {
+            "name": "pf1",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "number",
+              "maximum": 1,
+              "exclusiveMinimum": 0,
+              "default": 0.75,
+              "title": "Pf1"
+            }
+          },
+          {
+            "name": "pf2",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "number",
+              "maximum": 1,
+              "exclusiveMinimum": 0,
+              "default": 0.95,
+              "title": "Pf2"
+            }
+          },
+          {
+            "name": "current_a",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "number",
+              "minimum": 0,
+              "default": 300.0,
+              "title": "Current A"
+            }
+          },
+          {
+            "name": "resistance_ohm",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "number",
+              "minimum": 0,
+              "default": 0.1,
+              "title": "Resistance Ohm"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/LossesResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
     }
   },
   "components": {
@@ -486,6 +576,38 @@
           "load_duration_curve"
         ],
         "title": "AnalyticsResponse"
+      },
+      "AtcBenchmark": {
+        "properties": {
+          "at_c_loss_pct": {
+            "type": "number",
+            "title": "At C Loss Pct"
+          },
+          "year": {
+            "type": "string",
+            "title": "Year"
+          },
+          "note": {
+            "type": "string",
+            "title": "Note"
+          },
+          "provenance": {
+            "$ref": "#/components/schemas/ProvenanceKind"
+          },
+          "source": {
+            "type": "string",
+            "title": "Source"
+          }
+        },
+        "type": "object",
+        "required": [
+          "at_c_loss_pct",
+          "year",
+          "note",
+          "provenance",
+          "source"
+        ],
+        "title": "AtcBenchmark"
       },
       "BandInfo": {
         "properties": {
@@ -734,6 +856,73 @@
           "load_mw"
         ],
         "title": "LdcPoint"
+      },
+      "LossesResponse": {
+        "properties": {
+          "provenance": {
+            "$ref": "#/components/schemas/ProvenanceKind"
+          },
+          "source": {
+            "type": "string",
+            "title": "Source"
+          },
+          "active_power_kw": {
+            "type": "number",
+            "title": "Active Power Kw"
+          },
+          "pf1": {
+            "type": "number",
+            "title": "Pf1"
+          },
+          "pf2": {
+            "type": "number",
+            "title": "Pf2"
+          },
+          "capacitor_kvar": {
+            "type": "number",
+            "title": "Capacitor Kvar"
+          },
+          "current_a": {
+            "type": "number",
+            "title": "Current A"
+          },
+          "resistance_ohm": {
+            "type": "number",
+            "title": "Resistance Ohm"
+          },
+          "loss_kw": {
+            "type": "number",
+            "title": "Loss Kw"
+          },
+          "loss_reduction_pct": {
+            "type": "number",
+            "title": "Loss Reduction Pct"
+          },
+          "is_illustrative": {
+            "type": "boolean",
+            "const": true,
+            "title": "Is Illustrative"
+          },
+          "at_c_benchmark": {
+            "$ref": "#/components/schemas/AtcBenchmark"
+          }
+        },
+        "type": "object",
+        "required": [
+          "provenance",
+          "source",
+          "active_power_kw",
+          "pf1",
+          "pf2",
+          "capacitor_kvar",
+          "current_a",
+          "resistance_ohm",
+          "loss_kw",
+          "loss_reduction_pct",
+          "is_illustrative",
+          "at_c_benchmark"
+        ],
+        "title": "LossesResponse"
       },
       "OverviewResponse": {
         "properties": {

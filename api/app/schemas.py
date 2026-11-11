@@ -119,3 +119,24 @@ class TransformerResponse(Tagged):
     ageing_rate_v: float = Field(description="Relative ageing rate, 1.0 at 98 °C.")
     life_hours_used: float = Field(description="Equivalent hours of life at 98 °C.")
     hours_elapsed: float
+
+
+class AtcBenchmark(BaseModel):
+    at_c_loss_pct: float
+    year: str
+    note: str
+    provenance: ProvenanceKind
+    source: str
+
+
+class LossesResponse(Tagged):
+    active_power_kw: float
+    pf1: float
+    pf2: float
+    capacitor_kvar: float
+    current_a: float
+    resistance_ohm: float
+    loss_kw: float
+    loss_reduction_pct: float
+    is_illustrative: Literal[True]
+    at_c_benchmark: AtcBenchmark
