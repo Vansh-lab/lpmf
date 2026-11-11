@@ -255,6 +255,37 @@ def test_solar_unknown_day_and_bad_inputs():
     _get("/solar?performance_ratio=0", 422)
 
 
+# --- iex price ----------------------------------------------------------------
+
+
+@needs_bands
+def test_iex_default_day_has_an_expensive_evening_block():
+    body = _get("/iex")
+    assert len(body["blocks"]) == 96
+    assert body["is_illustrative"] is True
+    assert body["price_range_benchmark"]["provenance"] == "FOREIGN"
+    assert any(b["is_expensive"] for b in body["blocks"])
+    evening_block = next(b for b in body["blocks"] if b["ts_target"][11:13] == "20")
+    morning_block = next(b for b in body["blocks"] if b["ts_target"][11:13] == "08")
+    assert evening_block["price_per_mwh"] > morning_block["price_per_mwh"]
+    assert "download" in body["manual_download_note"].lower()
+
+
+@needs_bands
+def test_iex_total_cost_matches_sum_of_blocks():
+    body = _get("/iex")
+    assert body["total_cost_rupees"] == pytest.approx(
+        sum(b["cost_rupees"] for b in body["blocks"]), rel=1e-3
+    )
+
+
+@needs_bands
+def test_iex_unknown_day_and_bad_inputs():
+    _get("/iex?date=2024-01-01", 404)
+    _get("/iex?min_price_per_mwh=9000&max_price_per_mwh=1000", 422)
+    _get("/iex?expensive_hour=24", 422)
+
+
 # --- losses ---------------------------------------------------------------------
 
 

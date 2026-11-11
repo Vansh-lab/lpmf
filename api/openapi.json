@@ -662,6 +662,92 @@
           }
         }
       }
+    },
+    "/iex": {
+      "get": {
+        "tags": [
+          "iex"
+        ],
+        "summary": "Iex Price",
+        "operationId": "iex_price_iex_get",
+        "parameters": [
+          {
+            "name": "date",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "format": "date"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Test-set day; default latest.",
+              "title": "Date"
+            },
+            "description": "Test-set day; default latest."
+          },
+          {
+            "name": "min_price_per_mwh",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "number",
+              "minimum": 0,
+              "default": 1110.0,
+              "title": "Min Price Per Mwh"
+            }
+          },
+          {
+            "name": "max_price_per_mwh",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "number",
+              "minimum": 0,
+              "default": 9710.0,
+              "title": "Max Price Per Mwh"
+            }
+          },
+          {
+            "name": "expensive_hour",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "maximum": 23,
+              "minimum": 0,
+              "default": 20,
+              "title": "Expensive Hour"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/IexPriceResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
     }
   },
   "components": {
@@ -988,6 +1074,157 @@
         },
         "type": "object",
         "title": "HTTPValidationError"
+      },
+      "IexBlock": {
+        "properties": {
+          "block": {
+            "type": "integer",
+            "maximum": 96.0,
+            "minimum": 1.0,
+            "title": "Block"
+          },
+          "ts_target": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Ts Target"
+          },
+          "load_mw": {
+            "type": "number",
+            "title": "Load Mw"
+          },
+          "price_per_mwh": {
+            "type": "number",
+            "title": "Price Per Mwh"
+          },
+          "cost_rupees": {
+            "type": "number",
+            "title": "Cost Rupees"
+          },
+          "is_expensive": {
+            "type": "boolean",
+            "title": "Is Expensive",
+            "description": "Price in the top quartile of this day's curve."
+          }
+        },
+        "type": "object",
+        "required": [
+          "block",
+          "ts_target",
+          "load_mw",
+          "price_per_mwh",
+          "cost_rupees",
+          "is_expensive"
+        ],
+        "title": "IexBlock"
+      },
+      "IexPriceRange": {
+        "properties": {
+          "midday_price_per_unit": {
+            "type": "number",
+            "title": "Midday Price Per Unit"
+          },
+          "night_price_per_unit": {
+            "type": "number",
+            "title": "Night Price Per Unit"
+          },
+          "month": {
+            "type": "string",
+            "title": "Month"
+          },
+          "note": {
+            "type": "string",
+            "title": "Note"
+          },
+          "provenance": {
+            "$ref": "#/components/schemas/ProvenanceKind"
+          },
+          "source": {
+            "type": "string",
+            "title": "Source"
+          }
+        },
+        "type": "object",
+        "required": [
+          "midday_price_per_unit",
+          "night_price_per_unit",
+          "month",
+          "note",
+          "provenance",
+          "source"
+        ],
+        "title": "IexPriceRange"
+      },
+      "IexPriceResponse": {
+        "properties": {
+          "provenance": {
+            "$ref": "#/components/schemas/ProvenanceKind"
+          },
+          "source": {
+            "type": "string",
+            "title": "Source"
+          },
+          "date": {
+            "type": "string",
+            "format": "date",
+            "title": "Date"
+          },
+          "issued_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Issued At"
+          },
+          "min_price_per_mwh": {
+            "type": "number",
+            "title": "Min Price Per Mwh"
+          },
+          "max_price_per_mwh": {
+            "type": "number",
+            "title": "Max Price Per Mwh"
+          },
+          "expensive_hour": {
+            "type": "integer",
+            "title": "Expensive Hour"
+          },
+          "blocks": {
+            "items": {
+              "$ref": "#/components/schemas/IexBlock"
+            },
+            "type": "array",
+            "title": "Blocks"
+          },
+          "total_cost_rupees": {
+            "type": "number",
+            "title": "Total Cost Rupees"
+          },
+          "is_illustrative": {
+            "type": "boolean",
+            "const": true,
+            "title": "Is Illustrative"
+          },
+          "manual_download_note": {
+            "type": "string",
+            "title": "Manual Download Note"
+          },
+          "price_range_benchmark": {
+            "$ref": "#/components/schemas/IexPriceRange"
+          }
+        },
+        "type": "object",
+        "required": [
+          "provenance",
+          "source",
+          "date",
+          "issued_at",
+          "min_price_per_mwh",
+          "max_price_per_mwh",
+          "expensive_hour",
+          "blocks",
+          "total_cost_rupees",
+          "is_illustrative",
+          "manual_download_note",
+          "price_range_benchmark"
+        ],
+        "title": "IexPriceResponse"
       },
       "LdcPoint": {
         "properties": {

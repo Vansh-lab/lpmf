@@ -20,6 +20,7 @@ from app.routers import (
     analytics,
     dsm,
     forecast,
+    iex_price,
     losses,
     overview,
     solar,
@@ -76,3 +77,4 @@ app.include_router(transformer.router, prefix="/transformer", tags=["transformer
 app.include_router(losses.router, prefix="/losses", tags=["losses"])
 app.include_router(tod_bill.router, prefix="/tod", tags=["tod"])
 app.include_router(solar.router, prefix="/solar", tags=["solar"])
+app.include_router(iex_price.router, prefix="/iex", tags=["iex"])

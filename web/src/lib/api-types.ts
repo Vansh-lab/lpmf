@@ -191,6 +191,23 @@ export interface paths {
     patch?: never;
     trace?: never;
   };
+  "/iex": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    /** Iex Price */
+    get: operations["iex_price_iex_get"];
+    put?: never;
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
 }
 export type webhooks = Record<string, never>;
 export interface components {
@@ -323,6 +340,75 @@ export interface components {
     HTTPValidationError: {
       /** Detail */
       detail?: components["schemas"]["ValidationError"][];
+    };
+    /** IexBlock */
+    IexBlock: {
+      /** Block */
+      block: number;
+      /**
+       * Ts Target
+       * Format: date-time
+       */
+      ts_target: string;
+      /** Load Mw */
+      load_mw: number;
+      /** Price Per Mwh */
+      price_per_mwh: number;
+      /** Cost Rupees */
+      cost_rupees: number;
+      /**
+       * Is Expensive
+       * @description Price in the top quartile of this day's curve.
+       */
+      is_expensive: boolean;
+    };
+    /** IexPriceRange */
+    IexPriceRange: {
+      /** Midday Price Per Unit */
+      midday_price_per_unit: number;
+      /** Night Price Per Unit */
+      night_price_per_unit: number;
+      /** Month */
+      month: string;
+      /** Note */
+      note: string;
+      provenance: components["schemas"]["ProvenanceKind"];
+      /** Source */
+      source: string;
+    };
+    /** IexPriceResponse */
+    IexPriceResponse: {
+      provenance: components["schemas"]["ProvenanceKind"];
+      /** Source */
+      source: string;
+      /**
+       * Date
+       * Format: date
+       */
+      date: string;
+      /**
+       * Issued At
+       * Format: date-time
+       */
+      issued_at: string;
+      /** Min Price Per Mwh */
+      min_price_per_mwh: number;
+      /** Max Price Per Mwh */
+      max_price_per_mwh: number;
+      /** Expensive Hour */
+      expensive_hour: number;
+      /** Blocks */
+      blocks: components["schemas"]["IexBlock"][];
+      /** Total Cost Rupees */
+      total_cost_rupees: number;
+      /**
+       * Is Illustrative
+       * @constant
+       */
+      is_illustrative: true;
+      /** Manual Download Note */
+      manual_download_note: string;
+      price_range_benchmark: components["schemas"]["IexPriceRange"];
     };
     /** LdcPoint */
     LdcPoint: {
@@ -946,6 +1032,41 @@ export interface operations {
         };
         content: {
           "application/json": components["schemas"]["SolarResponse"];
+        };
+      };
+      /** @description Validation Error */
+      422: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["HTTPValidationError"];
+        };
+      };
+    };
+  };
+  iex_price_iex_get: {
+    parameters: {
+      query?: {
+        /** @description Test-set day; default latest. */
+        date?: string | null;
+        min_price_per_mwh?: number;
+        max_price_per_mwh?: number;
+        expensive_hour?: number;
+      };
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      /** @description Successful Response */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["IexPriceResponse"];
         };
       };
       /** @description Validation Error */

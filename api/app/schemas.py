@@ -153,6 +153,37 @@ class TodRates(BaseModel):
     source: str
 
 
+class IexPriceRange(BaseModel):
+    midday_price_per_unit: float
+    night_price_per_unit: float
+    month: str
+    note: str
+    provenance: ProvenanceKind
+    source: str
+
+
+class IexBlock(BaseModel):
+    block: int = Field(ge=1, le=96)
+    ts_target: datetime
+    load_mw: float
+    price_per_mwh: float
+    cost_rupees: float
+    is_expensive: bool = Field(description="Price in the top quartile of this day's curve.")
+
+
+class IexPriceResponse(Tagged):
+    date: date
+    issued_at: datetime
+    min_price_per_mwh: float
+    max_price_per_mwh: float
+    expensive_hour: int
+    blocks: list[IexBlock]
+    total_cost_rupees: float
+    is_illustrative: Literal[True]
+    manual_download_note: str
+    price_range_benchmark: IexPriceRange
+
+
 class SolarCapacityBenchmark(BaseModel):
     capacity_mwp: float
     as_of: str
