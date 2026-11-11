@@ -60,6 +60,45 @@ exists. Every entry below names what was searched, where, and the outcome.
   (`illustrative_hourly_price_per_mwh`) kept as a fallback for when the
   pipeline hasn't been run (artifacts are gitignored).
 
+### Dataset owner, source, licence (per explicit follow-up request, 2026-11-11)
+
+- **Owner (Kaggle username):** `mukund604` (no real name given on the
+  dataset page).
+- **Original source / provenance:** **not documented anywhere** —
+  confirmed by expanding every metadata field on the Kaggle page itself
+  (not just the API metadata): "Authors" empty, "Coverage" empty, "DOI
+  Citation" empty, and "Provenance → Sources" / "Collection Methodology" /
+  "Citations" all literally "—" / "-". The dataset's own description says
+  only "exchange price of electricity for the day ahead market (DAM) from
+  2019 to 2024" (the file's actual data starts 2018-01-01, a day outside
+  that stated range).
+- **Licence:** Apache 2.0 (per Kaggle's own licence field).
+- **Dataset ID:** 5757060, title "Indian Energy Exchange - Time Series
+  Forecasting", 1 file (`DAM.xlsx`), 233,760 rows x 7 columns.
+
+### Spot-check against the official IEX website (per explicit follow-up request)
+
+IEX's own Market Snapshot page (iexindia.com/market-data/day-ahead-market/
+market-snapshot) states "Data in 15-minute time block format is available
+from delivery day 1st April 2022 onwards" — so only dates from Apr 2022
+onward can be checked against it directly. Checked **4 random dates**
+(00:00-02:00 IST block prices, MCP Rs/MWh) by reading the live site and
+comparing to the Kaggle file:
+
+| Date | Site vs Kaggle |
+|---|---|
+| 2024-03-15 | **Exact match**, all 8 checked blocks (e.g. 00:00 4649.15, 01:00 3901.98) |
+| 2023-07-20 | **Exact match**, all 8 checked blocks (e.g. 00:00 8000.07, 00:45 4999.87) |
+| 2022-06-10 | **Exact match**, all 8 checked blocks (e.g. 00:00 12000.00, 01:30 8390.42) |
+| 2024-08-25 | **Exact match**, all 8 checked blocks (e.g. 00:00 3350.26, 01:45 2900.63) |
+
+**4 for 4 exact matches** (to 2 decimal places, the site's own precision) —
+strong direct confirmation this is genuine real IEX DAM data, despite the
+uploader leaving every provenance field blank. Dates before 1 Apr 2022
+(the file has data back to 2018-01-01) could not be checked this way since
+the official site itself doesn't offer 15-min data that far back; no
+alternative official source for that older period was found.
+
 ## Solar & Net Load
 
 - **Searched:** Kaggle "Solar Power Generation Data" (India, 2 plants) for

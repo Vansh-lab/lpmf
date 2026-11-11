@@ -5,7 +5,9 @@ import {
   BarChart,
   CartesianGrid,
   Cell,
+  Legend,
   Line,
+  LineChart,
   ComposedChart,
   ResponsiveContainer,
   Tooltip,
@@ -122,6 +124,10 @@ export function IexPriceView() {
             </div>
           </Panel>
 
+          {r.real_price_profile && (
+            <YearComparisonPanels profile={r.real_price_profile} />
+          )}
+
           <Panel title="Hourly cost (expensive blocks highlighted)">
             <div className="h-64">
               <ResponsiveContainer width="100%" height="100%">
@@ -163,6 +169,92 @@ function IllustrativeBanner({ note }: { note: string }) {
       </p>
       <p className="mt-1 text-sm text-[color:var(--foreground)]">{note}</p>
     </div>
+  );
+}
+
+function YearComparisonPanels({
+  profile,
+}: {
+  profile: NonNullable<IexPriceResponse["real_price_profile"]>;
+}) {
+  const hourlyData = profile.hourly_profile_per_mwh.map((avgAll, h) => ({
+    h,
+    avgAll: avgAll / 1000,
+    latestYear: profile.latest_year_hourly_profile_per_mwh[h] / 1000,
+  }));
+  const yearlyData = Object.entries(profile.yearly_mean_price_per_mwh)
+    .sort(([a], [b]) => Number(a) - Number(b))
+    .map(([year, price]) => ({ year, price: price / 1000 }));
+
+  return (
+    <>
+      <Panel
+        title={`Hourly price: ${profile.latest_year} vs the ${profile.date_range[0].slice(0, 4)}–${profile.date_range[1].slice(0, 4)} average`}
+        provenance={profile.provenance}
+        source={profile.source}
+      >
+        <div className="h-64">
+          <ResponsiveContainer width="100%" height="100%">
+            <LineChart data={hourlyData} margin={{ top: 8, right: 8, left: 0, bottom: 16 }}>
+              <CartesianGrid {...gridProps} />
+              <XAxis
+                {...axisProps}
+                dataKey="h"
+                tickFormatter={(h: number) => `${h}:00`}
+                label={{
+                  value: "Hour of day",
+                  position: "insideBottom",
+                  offset: -8,
+                  fill: "var(--lpmf-muted)",
+                  fontSize: 11,
+                }}
+              />
+              <YAxis {...axisProps} width={48} tickFormatter={(v: number) => `₹${v.toFixed(0)}`} />
+              <Tooltip
+                {...tooltipProps}
+                labelFormatter={(h) => `${h}:00`}
+                formatter={(v, name) => [`₹${Number(v).toFixed(2)}/unit`, name]}
+              />
+              <Legend wrapperStyle={{ fontSize: 11 }} />
+              <Line
+                name={`${profile.date_range[0].slice(0, 4)}–${profile.date_range[1].slice(0, 4)} average`}
+                dataKey="avgAll"
+                stroke={chartColors.muted}
+                strokeWidth={1.5}
+                dot={false}
+                isAnimationActive={false}
+              />
+              <Line
+                name={`${profile.latest_year} only`}
+                dataKey="latestYear"
+                stroke={chartColors.amber}
+                strokeWidth={2}
+                dot={false}
+                isAnimationActive={false}
+              />
+            </LineChart>
+          </ResponsiveContainer>
+        </div>
+        <p className="mt-3 text-xs text-[color:var(--lpmf-muted)]">
+          {profile.latest_year} is a partial year in this dataset (through Aug {profile.latest_year}{" "}
+          only).
+        </p>
+      </Panel>
+
+      <Panel title="Year-wise average price" provenance={profile.provenance} source={profile.source}>
+        <div className="h-48">
+          <ResponsiveContainer width="100%" height="100%">
+            <BarChart data={yearlyData} margin={{ top: 8, right: 8, left: 0, bottom: 8 }}>
+              <CartesianGrid {...gridProps} />
+              <XAxis {...axisProps} dataKey="year" />
+              <YAxis {...axisProps} width={48} tickFormatter={(v: number) => `₹${v.toFixed(0)}`} />
+              <Tooltip {...tooltipProps} formatter={(v) => [`₹${Number(v).toFixed(2)}/unit`, "Mean price"]} />
+              <Bar dataKey="price" fill={chartColors.amber} isAnimationActive={false} />
+            </BarChart>
+          </ResponsiveContainer>
+        </div>
+      </Panel>
+    </>
   );
 }
 

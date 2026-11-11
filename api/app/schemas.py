@@ -250,6 +250,10 @@ class IexBlock(BaseModel):
 class RealPriceProfileInfo(BaseModel):
     n_days_averaged: int
     date_range: list[str]
+    hourly_profile_per_mwh: list[float]
+    latest_year: int
+    latest_year_hourly_profile_per_mwh: list[float]
+    yearly_mean_price_per_mwh: dict[str, float]
     note: str
     provenance: ProvenanceKind
     source: str

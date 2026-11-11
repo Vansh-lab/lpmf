@@ -53,10 +53,14 @@ def load_real_price_profile(artifacts_dir: Path = IEX_ARTIFACTS_DIR) -> dict | N
         "hourly_profile_per_mwh": data["hourly_profile_per_mwh"],
         "n_days_averaged": data["n_days_averaged"],
         "date_range": data["date_range"],
+        "latest_year": data["latest_year"],
+        "latest_year_hourly_profile_per_mwh": data["latest_year_hourly_profile_per_mwh"],
+        "yearly_mean_price_per_mwh": data["yearly_mean_price_per_mwh"],
         "provenance": ProvenanceKind.REAL,
         "note": (
             "The historical block-of-day average IEX DAM price (2018-2024) -- a real, "
-            "typical-day curve, not that specific day's actual real-time price."
+            "typical-day curve, not that specific day's actual real-time price. The latest "
+            "year shown (2024) is a partial year in this dataset (through Aug 2024 only)."
         ),
         "source": data["source"],
     }

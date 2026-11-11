@@ -545,6 +545,16 @@ export interface components {
       n_days_averaged: number;
       /** Date Range */
       date_range: string[];
+      /** Hourly Profile Per Mwh */
+      hourly_profile_per_mwh: number[];
+      /** Latest Year */
+      latest_year: number;
+      /** Latest Year Hourly Profile Per Mwh */
+      latest_year_hourly_profile_per_mwh: number[];
+      /** Yearly Mean Price Per Mwh */
+      yearly_mean_price_per_mwh: {
+        [key: string]: number;
+      };
       /** Note */
       note: string;
       provenance: components["schemas"]["ProvenanceKind"];

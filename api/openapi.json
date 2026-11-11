@@ -1582,6 +1582,31 @@
             "type": "array",
             "title": "Date Range"
           },
+          "hourly_profile_per_mwh": {
+            "items": {
+              "type": "number"
+            },
+            "type": "array",
+            "title": "Hourly Profile Per Mwh"
+          },
+          "latest_year": {
+            "type": "integer",
+            "title": "Latest Year"
+          },
+          "latest_year_hourly_profile_per_mwh": {
+            "items": {
+              "type": "number"
+            },
+            "type": "array",
+            "title": "Latest Year Hourly Profile Per Mwh"
+          },
+          "yearly_mean_price_per_mwh": {
+            "additionalProperties": {
+              "type": "number"
+            },
+            "type": "object",
+            "title": "Yearly Mean Price Per Mwh"
+          },
           "note": {
             "type": "string",
             "title": "Note"
@@ -1598,6 +1623,10 @@
         "required": [
           "n_days_averaged",
           "date_range",
+          "hourly_profile_per_mwh",
+          "latest_year",
+          "latest_year_hourly_profile_per_mwh",
+          "yearly_mean_price_per_mwh",
           "note",
           "provenance",
           "source"

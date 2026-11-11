@@ -77,6 +77,9 @@ def test_load_real_price_profile_loads_and_shapes_the_real_artifact(tmp_path):
         "hourly_profile_per_mwh": [3000.0] * 24,
         "n_days_averaged": 2435,
         "date_range": ["2018-01-01 00:00:00", "2024-08-31 23:45:00"],
+        "latest_year": 2024,
+        "latest_year_hourly_profile_per_mwh": [3500.0] * 24,
+        "yearly_mean_price_per_mwh": {"2018": 3935.06, "2024": 4964.35},
         "source": "Kaggle mukund604/indian-energy-exchange-time-series-forecasting",
     }
     (tmp_path / "price_profile.json").write_text(json.dumps(data))
@@ -87,3 +90,6 @@ def test_load_real_price_profile_loads_and_shapes_the_real_artifact(tmp_path):
     assert out["n_days_averaged"] == 2435
     assert len(out["hourly_profile_per_mwh"]) == 24
     assert "typical-day" in out["note"]
+    assert out["latest_year"] == 2024
+    assert len(out["latest_year_hourly_profile_per_mwh"]) == 24
+    assert out["yearly_mean_price_per_mwh"]["2024"] == pytest.approx(4964.35)

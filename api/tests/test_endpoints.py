@@ -292,6 +292,9 @@ def test_iex_default_day_has_an_expensive_evening_block():
         assert body["provenance"] == "REAL"
         assert body["real_price_profile"]["provenance"] == "REAL"
         assert body["real_price_profile"]["n_days_averaged"] > 0
+        assert body["real_price_profile"]["latest_year"] >= 2024
+        assert len(body["real_price_profile"]["latest_year_hourly_profile_per_mwh"]) == 24
+        assert len(body["real_price_profile"]["yearly_mean_price_per_mwh"]) >= 2
 
 
 @needs_bands

@@ -11,7 +11,11 @@ import logging
 from pathlib import Path
 
 from lpmf.iex.load import load_raw, validate_against_expectations
-from lpmf.iex.profile import build_block_of_day_profile, hourly_from_block_profile
+from lpmf.iex.profile import (
+    build_block_of_day_profile,
+    hourly_from_block_profile,
+    yearly_mean_price,
+)
 
 logger = logging.getLogger(__name__)
 ARTIFACTS_DIR = Path("models/artifacts/iex")
@@ -32,11 +36,20 @@ def main() -> None:
     block_profile = build_block_of_day_profile(ds)
     hourly_profile = hourly_from_block_profile(block_profile)
 
+    yearly_means = yearly_mean_price(ds)
+    latest_year = max(yearly_means)
+    logger.info("Latest year in the dataset: %d", latest_year)
+    latest_year_block_profile = build_block_of_day_profile(ds, year=latest_year)
+    latest_year_hourly_profile = hourly_from_block_profile(latest_year_block_profile)
+
     result = {
         "block_profile_per_mwh": block_profile,
         "hourly_profile_per_mwh": hourly_profile,
         "n_days_averaged": checks["n_blocks"] // 96,
         "date_range": checks["date_range"],
+        "latest_year": latest_year,
+        "latest_year_hourly_profile_per_mwh": latest_year_hourly_profile,
+        "yearly_mean_price_per_mwh": yearly_means,
         "source": (
             "Kaggle mukund604/indian-energy-exchange-time-series-forecasting (DAM.xlsx), "
             "IEX Day-Ahead Market MCP"

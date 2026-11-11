@@ -15,10 +15,16 @@ from lpmf.iex.load import IexDataset
 BLOCKS_PER_DAY = 96
 
 
-def build_block_of_day_profile(ds: IexDataset) -> list[float]:
+def build_block_of_day_profile(ds: IexDataset, year: int | None = None) -> list[float]:
     """Mean price_per_mwh for each of the 96 blocks-of-day, in order
-    (block 0 = 00:00-00:15, ..., block 95 = 23:45-00:00)."""
+    (block 0 = 00:00-00:15, ..., block 95 = 23:45-00:00). Pass `year` to
+    restrict to one calendar year (e.g. the latest year alone, for
+    comparison against the full-history average)."""
     df = ds.df.copy()
+    if year is not None:
+        df = df[df["TimeStamp"].dt.year == year]
+        if df.empty:
+            raise ValueError(f"no rows for year {year} in this dataset.")
     df["block"] = df["TimeStamp"].dt.hour * 4 + df["TimeStamp"].dt.minute // 15
     profile = df.groupby("block")["price_per_mwh"].mean().reindex(range(BLOCKS_PER_DAY))
     if profile.isna().any():
@@ -32,3 +38,13 @@ def hourly_from_block_profile(block_profile: list[float]) -> list[float]:
     work in hourly resolution, e.g. the ToD/solar pages' convention)."""
     s = pd.Series(block_profile)
     return s.groupby(s.index // 4).mean().tolist()
+
+
+def yearly_mean_price(ds: IexDataset) -> dict[int, float]:
+    """Mean price_per_mwh for each calendar year present in the dataset --
+    a small year-wise average, distinct from the block-of-day profile."""
+    df = ds.df.copy()
+    df["year"] = df["TimeStamp"].dt.year
+    return {
+        int(year): float(mean) for year, mean in df.groupby("year")["price_per_mwh"].mean().items()
+    }
