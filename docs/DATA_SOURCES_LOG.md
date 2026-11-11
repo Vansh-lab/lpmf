@@ -161,6 +161,37 @@ alternative official source for that older period was found.
   `DERC_TOD_RATES`, its test, and the page's displayed hours/rates were
   all updated accordingly.
 
+### Is this schedule still the one applicable now? (confirmed 2026-11-11, per explicit follow-up request)
+
+Searched specifically for whether a newer DERC tariff order or ToD rule
+has superseded it. Found, across several independently-dated DERC/BSES/
+Tata Power DDL documents:
+- A DERC short-term-procurement order (05.03.2025) states explicitly:
+  **"there is no ARR Order passed by the Commission for FY 2025-26"** as
+  of that date.
+- A DERC order from January 2025 likewise states the base **Tariff Order
+  for 2024-25 is yet to be determined** by the Commission.
+- Every Power Purchase Cost Adjustment (PPAC/FPPAS) filing found from
+  2024 through the latest located (a DERC order dated 10 Nov 2026 on
+  September 2026 FPPAS recovery for BRPL/BYPL/TPDDL) is a **fuel-cost
+  surcharge adjustment only**, filed quarterly/monthly on top of the
+  existing base tariff — none of them revise the ToD structure, hours, or
+  percentages. Several explicitly cite **"Tariff Order dated 30.09.2021"**
+  as the base order a specific charge line was allowed under.
+- **Conclusion: the DERC base tariff schedule (whose ToD clause we read
+  directly, clause 3(d), p.2) remains the operative one** — no newer base
+  ARR/tariff order revising ToD has been issued as of the most recent
+  document found (Nov 2026). This is reported with the caveat that DERC's
+  own tariff-orders index page (derc.gov.in/tarriff-orders) was not
+  exhaustively paged through document-by-document; what's confirmed is
+  that no PPAC/FPPAS filing — which would be expected to reference a newer
+  base order if one existed — mentions one, and two explicit DERC
+  statements (Jan 2025, Mar 2025) confirm no new ARR/tariff order has been
+  passed since.
+- **Page citation added:** the ToD Bill page's rates panel and
+  `DERC_TOD_RATES["order_year"]` now state this confirmation explicitly,
+  with the date it was last checked.
+
 ## Losses & PF
 
 - **Searched:** PFC "Report on Performance of Power Utilities" (latest) for

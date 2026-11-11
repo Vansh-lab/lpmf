@@ -74,7 +74,7 @@ export function TodBillView() {
         {(r) => (
           <>
             <Panel
-              title={`DERC ToD rates, ${r.rates.order_year}`}
+              title="DERC ToD rates, FY 2020-21 schedule"
               provenance={r.rates.provenance}
               source={r.rates.source}
             >
@@ -91,6 +91,7 @@ export function TodBillView() {
                 />
               </div>
               <p className="mt-3 text-xs text-[color:var(--lpmf-muted)]">{r.rates.note}</p>
+              <p className="mt-2 text-xs text-[color:var(--lpmf-muted)]">{r.rates.order_year}</p>
             </Panel>
 
             <Panel title="Flat vs ToD vs shifted" provenance={r.provenance} source={r.source}>

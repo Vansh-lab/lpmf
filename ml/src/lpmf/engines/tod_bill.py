@@ -44,8 +44,11 @@ HOURS_PER_DAY = 24
 DERC_TOD_RATES = {
     "peak_surcharge_pct": 20.0,
     "off_peak_rebate_pct": 20.0,
-    "order_year": "FY 2020-21 (DERC's last base tariff order was 30.09.2021; "
-    "later orders adjust only the fuel-cost surcharge, not ToD structure)",
+    "order_year": "FY 2020-21 (confirmed still operative as of 2026-11-11: no new DERC "
+    "base/ARR tariff order has been passed since 30.09.2021 -- DERC's own orders dated "
+    "Jan 2025 and 05.03.2025 explicitly state no FY 2024-25 or FY 2025-26 ARR order "
+    "exists yet; every PPAC/FPPAS filing found through Nov 2026 adjusts only the "
+    "fuel-cost surcharge, never the ToD structure)",
     "peak_hours": [14, 15, 16, 22, 23, 0],  # 14:00-17:00 & 22:00-01:00
     "off_peak_hours": [4, 5, 6, 7, 8, 9],  # 04:00-10:00
     "note": (
