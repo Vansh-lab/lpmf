@@ -1881,6 +1881,46 @@
         ],
         "title": "SolarCapacityBenchmark"
       },
+      "SolarPlantDiagnostics": {
+        "properties": {
+          "plant_1_dc_ac_ratio": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Plant 1 Dc Ac Ratio"
+          },
+          "plant_2_dc_ac_ratio": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Plant 2 Dc Ac Ratio"
+          },
+          "plant_2_iqr_flagged_inverters": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Plant 2 Iqr Flagged Inverters"
+          }
+        },
+        "type": "object",
+        "required": [
+          "plant_1_dc_ac_ratio",
+          "plant_2_dc_ac_ratio",
+          "plant_2_iqr_flagged_inverters"
+        ],
+        "title": "SolarPlantDiagnostics"
+      },
       "SolarPlantValidation": {
         "properties": {
           "plant": {
@@ -1895,6 +1935,10 @@
             "type": "integer",
             "title": "N Daytime Blocks"
           },
+          "n_daytime_zero_actual_blocks": {
+            "type": "integer",
+            "title": "N Daytime Zero Actual Blocks"
+          },
           "fitted_capacity_x_pr_kw": {
             "type": "number",
             "title": "Fitted Capacity X Pr Kw"
@@ -1903,9 +1947,21 @@
             "type": "number",
             "title": "R Squared"
           },
+          "r_squared_daytime": {
+            "type": "number",
+            "title": "R Squared Daytime"
+          },
           "mape_daytime_pct": {
             "type": "number",
             "title": "Mape Daytime Pct"
+          },
+          "wape_daytime_pct": {
+            "type": "number",
+            "title": "Wape Daytime Pct"
+          },
+          "nmae_daytime_pct": {
+            "type": "number",
+            "title": "Nmae Daytime Pct"
           }
         },
         "type": "object",
@@ -1913,9 +1969,13 @@
           "plant",
           "n_blocks_merged",
           "n_daytime_blocks",
+          "n_daytime_zero_actual_blocks",
           "fitted_capacity_x_pr_kw",
           "r_squared",
-          "mape_daytime_pct"
+          "r_squared_daytime",
+          "mape_daytime_pct",
+          "wape_daytime_pct",
+          "nmae_daytime_pct"
         ],
         "title": "SolarPlantValidation"
       },
@@ -1934,6 +1994,9 @@
             "type": "string",
             "title": "Note"
           },
+          "diagnostics": {
+            "$ref": "#/components/schemas/SolarPlantDiagnostics"
+          },
           "source": {
             "type": "string",
             "title": "Source"
@@ -1945,6 +2008,7 @@
           "plant_2",
           "provenance",
           "note",
+          "diagnostics",
           "source"
         ],
         "title": "SolarRealPlantValidation"

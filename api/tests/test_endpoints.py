@@ -249,6 +249,12 @@ def test_solar_includes_real_plant_validation_when_the_pipeline_has_run():
     assert validation["provenance"] == "FOREIGN"
     assert 0 <= validation["plant_1"]["r_squared"] <= 1
     assert validation["plant_1"]["mape_daytime_pct"] >= 0
+    assert 0 <= validation["plant_1"]["r_squared_daytime"] <= 1
+    assert validation["plant_1"]["wape_daytime_pct"] >= 0
+    assert validation["plant_1"]["nmae_daytime_pct"] >= 0
+    assert validation["diagnostics"]["plant_1_dc_ac_ratio"] is not None
+    assert validation["diagnostics"]["plant_2_dc_ac_ratio"] is not None
+    assert isinstance(validation["diagnostics"]["plant_2_iqr_flagged_inverters"], list)
 
 
 @needs_15min

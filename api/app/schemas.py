@@ -294,9 +294,19 @@ class SolarPlantValidation(BaseModel):
     plant: int
     n_blocks_merged: int
     n_daytime_blocks: int
+    n_daytime_zero_actual_blocks: int
     fitted_capacity_x_pr_kw: float
     r_squared: float
+    r_squared_daytime: float
     mape_daytime_pct: float
+    wape_daytime_pct: float
+    nmae_daytime_pct: float
+
+
+class SolarPlantDiagnostics(BaseModel):
+    plant_1_dc_ac_ratio: float | None
+    plant_2_dc_ac_ratio: float | None
+    plant_2_iqr_flagged_inverters: list[str]
 
 
 class SolarRealPlantValidation(BaseModel):
@@ -304,6 +314,7 @@ class SolarRealPlantValidation(BaseModel):
     plant_2: SolarPlantValidation
     provenance: ProvenanceKind
     note: str
+    diagnostics: SolarPlantDiagnostics
     source: str
 
 

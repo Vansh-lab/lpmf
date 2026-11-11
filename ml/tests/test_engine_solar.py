@@ -74,9 +74,23 @@ def test_load_real_plant_validation_loads_and_shapes_the_real_artifact(tmp_path)
     import json
 
     data = {
-        "plant_1": {"plant": 1, "r_squared": 0.99, "mape_daytime_pct": 6.3},
-        "plant_2": {"plant": 2, "r_squared": 0.82, "mape_daytime_pct": 36.0},
+        "plant_1": {
+            "plant": 1,
+            "r_squared": 0.99,
+            "r_squared_daytime": 0.97,
+            "mape_daytime_pct": 6.3,
+        },
+        "plant_2": {
+            "plant": 2,
+            "r_squared": 0.82,
+            "r_squared_daytime": 0.21,
+            "mape_daytime_pct": 36.0,
+        },
         "source": "Kaggle anikannal/solar-power-generation-data",
+        "diagnostics": {
+            "plant_1": {"dc_ac_ratio": 0.098, "iqr_flagged_inverters": ["a", "b"]},
+            "plant_2": {"dc_ac_ratio": 0.978, "iqr_flagged_inverters": []},
+        },
     }
     (tmp_path / "validation.json").write_text(json.dumps(data))
 
@@ -85,3 +99,6 @@ def test_load_real_plant_validation_loads_and_shapes_the_real_artifact(tmp_path)
     assert out["provenance"] == ProvenanceKind.FOREIGN
     assert out["plant_1"]["r_squared"] == pytest.approx(0.99)
     assert out["plant_2"]["mape_daytime_pct"] == pytest.approx(36.0)
+    assert out["diagnostics"]["plant_1_dc_ac_ratio"] == pytest.approx(0.098)
+    assert out["diagnostics"]["plant_2_dc_ac_ratio"] == pytest.approx(0.978)
+    assert out["diagnostics"]["plant_2_iqr_flagged_inverters"] == []

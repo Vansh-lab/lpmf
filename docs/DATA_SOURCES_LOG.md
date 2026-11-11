@@ -69,15 +69,37 @@ exists. Every entry below names what was searched, where, and the outcome.
   15-min generation + weather sensor data, May-Jun 2020).
 - **Outcome: REAL validation added.** Fit the formula's combined
   capacity x PR slope by OLS through the origin against each plant's real
-  paired irradiance/power data: **Plant 1 r²=0.9915, MAPE(daytime)=6.34%**
-  (strong — the formula's functional form holds well); **Plant 2
-  r²=0.8215, MAPE(daytime)=36.01%** (notably worse, not independently
-  root-caused here — plausibly inverter downtime or sensor gaps in this
-  public dataset, not necessarily a problem with the formula since Plant 1
-  fits so well). Wired into the Solar & Net Load page as a new FOREIGN
-  "real plant validation" panel, alongside the existing REAL Open-Meteo
-  GHI + MODELLED Delhi-formula output and the FOREIGN rooftop-capacity
-  benchmark, all unchanged.
+  paired irradiance/power data.
+- **Diagnosed further (2026-11-11), per explicit follow-up request** —
+  see `docs/BENCHMARKS.md`'s "Solar Plant 2 diagnosis" section for the
+  full old-vs-new table and reasoning. Summary:
+  - **DC/AC unit-mismatch check**: Plant 2's AC/DC ratio ≈0.978 (plausible
+    real efficiency) — no Plant-1-style mismatch (Plant 1's own ratio
+    ≈0.098 is a real quirk in that file, unrelated and untouched).
+  - **MAPE methodology fixed**: daytime floor raised to 0.1 kW/m² (100
+    W/m²) as requested; added WAPE and nMAE (not dominated by near-zero
+    rows the way MAPE can be); added a **daytime-only r²** alongside the
+    full-period one.
+  - **Key finding**: Plant 2's full-period r²=0.8215 was mostly the model
+    trivially getting night right — **daytime-only r²=0.208**. MAPE
+    36.20%, WAPE/nMAE 28.71% (daytime, floor 0.1).
+  - **Faulty-inverter rule written before checking its effect on the
+    fit**: flag an inverter only if its zero-output rate during strong
+    irradiance (>0.6 kW/m²) is a Tukey IQR outlier against the *other*
+    inverters' own spread. Plant 2's 22 inverters' zero-rates (4.4%-49.3%)
+    form a smooth continuum with **zero IQR outliers** — so no inverters
+    are excluded; doing so without this rule would be cherry-picking data
+    to fit the model. (Same rule on Plant 1, for consistency, flags 2 of
+    22 inverters at only ≈2.5% zero-rate — noted, not acted on.)
+  - Plant 1 after the same re-diagnosis: r²=0.9915 (all) / 0.9698
+    (daytime), MAPE 6.23%, WAPE/nMAE 5.67% — still strong, confirming the
+    formula itself is fine; Plant 2's weakness is plant-specific.
+  - Full per-inverter table: `models/artifacts/solar/validation.json`
+    (gitignored; regenerate via `python -m lpmf.solar.pipeline`).
+  - Wired into the Solar & Net Load page as a FOREIGN "real plant
+    validation" panel with the full metric table and diagnostics summary,
+    alongside the existing REAL Open-Meteo GHI + MODELLED Delhi-formula
+    output and the FOREIGN rooftop-capacity benchmark, all unchanged.
 
 ## ToD Bill Simulator
 

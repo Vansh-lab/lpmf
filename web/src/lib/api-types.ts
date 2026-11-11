@@ -669,6 +669,15 @@ export interface components {
       /** Source */
       source: string;
     };
+    /** SolarPlantDiagnostics */
+    SolarPlantDiagnostics: {
+      /** Plant 1 Dc Ac Ratio */
+      plant_1_dc_ac_ratio: number | null;
+      /** Plant 2 Dc Ac Ratio */
+      plant_2_dc_ac_ratio: number | null;
+      /** Plant 2 Iqr Flagged Inverters */
+      plant_2_iqr_flagged_inverters: string[];
+    };
     /** SolarPlantValidation */
     SolarPlantValidation: {
       /** Plant */
@@ -677,12 +686,20 @@ export interface components {
       n_blocks_merged: number;
       /** N Daytime Blocks */
       n_daytime_blocks: number;
+      /** N Daytime Zero Actual Blocks */
+      n_daytime_zero_actual_blocks: number;
       /** Fitted Capacity X Pr Kw */
       fitted_capacity_x_pr_kw: number;
       /** R Squared */
       r_squared: number;
+      /** R Squared Daytime */
+      r_squared_daytime: number;
       /** Mape Daytime Pct */
       mape_daytime_pct: number;
+      /** Wape Daytime Pct */
+      wape_daytime_pct: number;
+      /** Nmae Daytime Pct */
+      nmae_daytime_pct: number;
     };
     /** SolarRealPlantValidation */
     SolarRealPlantValidation: {
@@ -691,6 +708,7 @@ export interface components {
       provenance: components["schemas"]["ProvenanceKind"];
       /** Note */
       note: string;
+      diagnostics: components["schemas"]["SolarPlantDiagnostics"];
       /** Source */
       source: string;
     };

@@ -39,6 +39,7 @@ def load_real_plant_validation(artifacts_dir: Path = SOLAR_ARTIFACTS_DIR) -> dic
     if not path.exists():
         return None
     data = json.loads(path.read_text())
+    diagnostics = data.get("diagnostics", {})
     return {
         "plant_1": data["plant_1"],
         "plant_2": data["plant_2"],
@@ -46,10 +47,23 @@ def load_real_plant_validation(artifacts_dir: Path = SOLAR_ARTIFACTS_DIR) -> dic
         "note": (
             "Real paired irradiance/power data from an Indian solar plant (not Delhi) -- "
             "validates the formula's functional form before it's applied to Delhi's real "
-            "Open-Meteo GHI. Plant 2's much weaker fit was not independently root-caused here; "
-            "plausibly inverter downtime or sensor gaps in this public dataset, not necessarily "
-            "a problem with the formula itself (Plant 1 fits it very well)."
+            "Open-Meteo GHI. Plant 2's daytime-only r^2 (0.21) is much lower than its "
+            "full-period r^2 (0.82, inflated by trivially-correct night zeros) -- the fit is "
+            "genuinely weak during actual generation hours. Diagnosed (not just assumed): no "
+            "Plant-1-style DC/AC unit mismatch (ratio ~0.98, a plausible real efficiency); "
+            "per-inverter zero-output rate during strong irradiance forms a smooth 4%-49% "
+            "continuum with no statistically distinguishable faulty subset (Tukey IQR rule on "
+            "the data's own spread), so no inverters are excluded -- excluding any without "
+            "that kind of rule would be cherry-picking data to fit the model, not a data-"
+            "quality decision."
         ),
+        "diagnostics": {
+            "plant_1_dc_ac_ratio": diagnostics.get("plant_1", {}).get("dc_ac_ratio"),
+            "plant_2_dc_ac_ratio": diagnostics.get("plant_2", {}).get("dc_ac_ratio"),
+            "plant_2_iqr_flagged_inverters": diagnostics.get("plant_2", {}).get(
+                "iqr_flagged_inverters", []
+            ),
+        },
         "source": data["source"],
     }
 

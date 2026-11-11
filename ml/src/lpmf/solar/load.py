@@ -28,7 +28,9 @@ class PlantDataset:
     merged: pd.DataFrame  # DATE_TIME, ac_power_kw (summed over inverters), irradiation_kw_m2
 
 
-def load_plant(plant: int, raw_dir: Path = RAW_DIR) -> PlantDataset:
+def load_plant_raw(plant: int, raw_dir: Path = RAW_DIR) -> tuple[pd.DataFrame, pd.DataFrame]:
+    """The per-inverter generation file and the per-plant weather file,
+    with DATE_TIME parsed, before any aggregation across inverters."""
     if plant not in (1, 2):
         raise ValueError(f"plant must be 1 or 2, got {plant}.")
 
@@ -36,6 +38,15 @@ def load_plant(plant: int, raw_dir: Path = RAW_DIR) -> PlantDataset:
     weather = pd.read_csv(raw_dir / f"Plant_{plant}_Weather_Sensor_Data.csv")
     gen["DATE_TIME"] = pd.to_datetime(gen["DATE_TIME"], format=_GEN_DATE_FORMAT[plant])
     weather["DATE_TIME"] = pd.to_datetime(weather["DATE_TIME"], format=_WEATHER_DATE_FORMAT)
+    return gen, weather
+
+
+def load_plant(
+    plant: int, raw_dir: Path = RAW_DIR, exclude_source_keys: tuple[str, ...] = ()
+) -> PlantDataset:
+    gen, weather = load_plant_raw(plant, raw_dir)
+    if exclude_source_keys:
+        gen = gen[~gen["SOURCE_KEY"].isin(exclude_source_keys)]
 
     total_ac = gen.groupby("DATE_TIME")["AC_POWER"].sum().reset_index()
     merged = total_ac.merge(weather[["DATE_TIME", "IRRADIATION"]], on="DATE_TIME", how="inner")

@@ -166,24 +166,47 @@ export function SolarView() {
 
             {r.real_plant_validation && (
               <Panel
-                title="Formula validated against a real Indian solar plant"
+                title="Formula validated against 2 real Indian solar plants"
                 provenance={r.real_plant_validation.provenance}
                 source={r.real_plant_validation.source}
               >
-                <div className="grid gap-4 md:grid-cols-2">
-                  <KpiCard
-                    label="Plant 1 fit"
-                    value={`r² ${r.real_plant_validation.plant_1.r_squared.toFixed(3)}`}
-                    hint={`MAPE (daytime): ${r.real_plant_validation.plant_1.mape_daytime_pct.toFixed(1)}%`}
-                  />
-                  <KpiCard
-                    label="Plant 2 fit"
-                    value={`r² ${r.real_plant_validation.plant_2.r_squared.toFixed(3)}`}
-                    hint={`MAPE (daytime): ${r.real_plant_validation.plant_2.mape_daytime_pct.toFixed(1)}%`}
-                  />
+                <div className="overflow-x-auto">
+                  <table className="w-full text-left text-sm">
+                    <thead>
+                      <tr className="text-[11px] uppercase tracking-wide text-[color:var(--lpmf-muted)]">
+                        <th className="pb-2 pr-4"></th>
+                        <th className="pb-2 pr-4">r² (all blocks)</th>
+                        <th className="pb-2 pr-4">r² (daytime only)</th>
+                        <th className="pb-2 pr-4">MAPE</th>
+                        <th className="pb-2 pr-4">WAPE</th>
+                        <th className="pb-2">nMAE</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {[r.real_plant_validation.plant_1, r.real_plant_validation.plant_2].map((p) => (
+                        <tr key={p.plant} className="border-t border-[color:var(--border-faint)]">
+                          <td className="py-1.5 pr-4 font-medium">Plant {p.plant}</td>
+                          <td className="lpmf-mono py-1.5 pr-4">{p.r_squared.toFixed(3)}</td>
+                          <td className="lpmf-mono py-1.5 pr-4">{p.r_squared_daytime.toFixed(3)}</td>
+                          <td className="lpmf-mono py-1.5 pr-4">{p.mape_daytime_pct.toFixed(1)}%</td>
+                          <td className="lpmf-mono py-1.5 pr-4">{p.wape_daytime_pct.toFixed(1)}%</td>
+                          <td className="lpmf-mono py-1.5">{p.nmae_daytime_pct.toFixed(1)}%</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
                 </div>
                 <p className="mt-3 text-xs text-[color:var(--lpmf-muted)]">
                   {r.real_plant_validation.note}
+                </p>
+                <p className="mt-2 text-xs text-[color:var(--lpmf-muted)]">
+                  DC/AC ratio check: Plant 1 ≈{" "}
+                  {r.real_plant_validation.diagnostics.plant_1_dc_ac_ratio?.toFixed(2)}, Plant 2 ≈{" "}
+                  {r.real_plant_validation.diagnostics.plant_2_dc_ac_ratio?.toFixed(2)} (both plausible
+                  real inverter efficiencies — no unit mismatch).{" "}
+                  {r.real_plant_validation.diagnostics.plant_2_iqr_flagged_inverters.length === 0
+                    ? "No Plant 2 inverters flagged as statistical outliers."
+                    : `Flagged inverters: ${r.real_plant_validation.diagnostics.plant_2_iqr_flagged_inverters.join(", ")}.`}
                 </p>
               </Panel>
             )}

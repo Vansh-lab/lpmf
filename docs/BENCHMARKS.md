@@ -16,7 +16,7 @@ behind each one.
 | 06 | Transformer Health | User what-if | ILLUSTRATIVE | Formula (IEC 60076-7), unit-tested | — | Ageing-rate worked example | — | N/A, no model |
 | 07 | IEX Price | Delhi SLDC (load) + real IEX DAM price history (Kaggle `mukund604/...`, 2018-2024) | REAL (FOREIGN benchmark) | Formula + real historical block-of-day average price, unit-tested | EAC-PM WP 53/2026: ₹1.11-9.71/unit (May 2026) | Real historical hourly range ₹3.05-6.13/unit (6.7-yr average, narrower than EAC-PM's one-month snapshot) | — | N/A, no model. Falls back to the old illustrative curve if the pipeline hasn't been run (gitignored artifacts) |
 | 08 | ToD Bill Simulator | Illustrative profile | ILLUSTRATIVE (REAL: DERC rates) | Formula, unit-tested | DERC Tariff Schedule FY 2020-21, clause 3(d), p.2 (directly read) | Peak 20% surcharge, off-peak 20% rebate, 14-17h & 22-01h / 04-10h, May-Sep | — | N/A, no model. Rates/hours corrected 2026-11-11 (were unverified 30%/25%, 17-22h/22-6h) |
-| 09 | Solar & Net Load | Open-Meteo GHI + forecast | MODELLED (FOREIGN benchmark + FOREIGN real-plant validation) | Formula (PVWatts-style), unit-tested | MNRE/Renewable Watch: ~302 MWp Delhi rooftop (Mar 2025); real-plant validation (Kaggle `anikannal/solar-power-generation-data`) | Midday solar peak 149 MW at PR=0.8; formula validated r²=0.99/MAPE 6.3% (Plant 1), r²=0.82/MAPE 36.0% (Plant 2, weaker fit not root-caused) | — | N/A, no model |
+| 09 | Solar & Net Load | Open-Meteo GHI + forecast | MODELLED (FOREIGN benchmark + FOREIGN real-plant validation) | Formula (PVWatts-style), unit-tested | MNRE/Renewable Watch: ~302 MWp Delhi rooftop (Mar 2025); real-plant validation (Kaggle `anikannal/solar-power-generation-data`), diagnosed per-inverter (2026-11-11) | Midday solar peak 149 MW at PR=0.8; formula validated (daytime-only, see Note below): Plant 1 r²=0.970/MAPE 6.2%/WAPE 5.7%/nMAE 5.7%; Plant 2 r²=0.208/MAPE 36.2%/WAPE 28.7%/nMAE 28.7% (fit genuinely weak, diagnosed not guessed) | — | N/A, no model |
 | 10 | Losses & PF | User what-if | ILLUSTRATIVE (REAL: BRPL/TPDDL AT&C) | Formula, unit-tested | National AT&C 15.37% (FY2023, Rajya Sabha PQ 266); BRPL 6.58% / TPDDL 5.91% (FY2023-24, PFC via Power Line) | PF-correction/I²R worked examples | — | N/A, no model. BYPL unconfirmed — not guessed |
 | 11a | Theft & Segments — demo fleet | Synthetic smart-meter fleet | SYNTHETIC | Isolation Forest + K-means | — | precision@6 = 50% | — | N/A, generated data |
 | 11b | Theft & Segments — SGCC | SGCC (Zheng et al., IEEE TII 2018) | FOREIGN | Logistic regression → LightGBM | Paper: ~0.78 AUC-ROC (as stated in the brief; not independently verified) | Test AUC-ROC 0.7585 (below paper — no leakage flag) | 0.9174 / 0.7511 / 0.7585 | Train/val gap expected for tree model capacity; val≈test, no leakage |
@@ -40,3 +40,27 @@ behind each one.
   fully continuous); Solar's formula is now validated against two real
   Indian plants' paired irradiance/power data. See docs/DATA_SOURCES_LOG.md
   for the full search/validation detail.
+
+### Solar Plant 2 diagnosis (2026-11-11) — old vs new validation numbers
+
+The first validation pass used a "daytime" floor of 0.05 kW/m² and
+reported only r² (over the *full* period, including night) and one MAPE
+number. Re-diagnosed properly per request:
+
+| Metric | Old (first pass) | New (after fixing the methodology) | Why it changed |
+|---|---|---|---|
+| Plant 1 r² | 0.9915 (all blocks) | 0.9915 (all blocks) / **0.9698 (daytime only)** | Added a daytime-only r² — barely moves for Plant 1, confirming its fit is genuinely strong, not just an artifact of easy night zeros |
+| Plant 1 MAPE | 6.34% (floor 0.05) | 6.23% (floor 0.10) | Floor raised per request to a clearer "unambiguous daylight" cutoff (0.1 kW/m²); the difference is small because Plant 1's fit is solid at both floors |
+| Plant 1 WAPE / nMAE | not computed | 5.67% / 5.67% | New metrics, not dominated by any single low-output row the way MAPE can be |
+| **Plant 2 r²** | 0.8215 (all blocks) | 0.8215 (all blocks) / **0.208 (daytime only)** | **This is the key finding.** The headline 0.82 was almost entirely the model trivially getting night (GHI=0, power=0) right — during actual generation hours the formula explains only ~21% of Plant 2's variance |
+| Plant 2 MAPE | 36.01% (floor 0.05) | 36.20% (floor 0.10) | Essentially unchanged — MAPE was already real, not a floor artifact |
+| Plant 2 WAPE / nMAE | not computed | 28.71% / 28.71% | Still high but lower than MAPE, confirming MAPE was somewhat (not entirely) inflated by small-denominator rows |
+
+**Per-inverter fault diagnosis (data-quality rule written and applied before looking at any fit numbers):**
+1. **DC/AC unit-mismatch check** (requested, since Plant 1's own file has one): Plant 2's `sum(AC_POWER)/sum(DC_POWER)` ≈ **0.978**, a plausible real inverter efficiency — no mismatch. (Plant 1's own ratio is ≈0.098, a real quirk in that file, unrelated to Plant 2 and never touched since the formula only ever used AC_POWER.)
+2. **Per-inverter zero-output rate during strong, unambiguous sun** (IRRADIATION > 0.6 kW/m², well above the "any daylight" floor): computed for all 22 inverters per plant. Plant 2's rates run from **4.4% to 49.3%** — a smooth continuum, not two separable clusters.
+3. **Exclusion rule (written before checking its effect on the fit):** flag an inverter only if its zero-rate is a **Tukey IQR outlier** (> Q3 + 1.5×IQR) against the *other inverters'* own spread — a boundary set by the data, not chosen to hit a target r²/MAPE.
+4. **Result:** applying that rule to Plant 2 flags **zero inverters** — the smooth continuum has no statistical outlier to exclude. (The same rule applied to Plant 1, for consistency, flags 2 of its 22 inverters — both still only ≈2.5% zero-rate against a fleet that's otherwise ≈0%; noted for completeness, not acted on since Plant 1 wasn't the page in question.)
+5. **Conclusion:** no inverters are excluded from Plant 2's validation. Its weak daytime fit is reported honestly as-is rather than removing inverters to improve it — doing so without rule (3) above would be cherry-picking data to match the model, not a data-quality decision. The weak fit is plausibly explained by real physical causes (partial shading, soiling, wiring differences across 22 distinct strings) that the 22-inverter dataset's own structure doesn't let us separate further without more information (e.g., per-string capacity ratings, which aren't in this dataset).
+
+Full per-inverter table: `models/artifacts/solar/validation.json` (gitignored; regenerate with `python -m lpmf.solar.pipeline`).
