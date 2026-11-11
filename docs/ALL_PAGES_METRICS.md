@@ -16,9 +16,9 @@ numbers, since there is nothing to overfit.
 | 05 | DSM ₹ Calculator | Formula, unit-tested | User what-if | ILLUSTRATIVE | — | — | — | — | N/A, no model |
 | 06 | Transformer Health | Formula (IEC 60076-7), unit-tested | User what-if | ILLUSTRATIVE | — | — | — | — | N/A, no model |
 | 07 | IEX Price | Formula + illustrative price curve, unit-tested | Delhi SLDC (load) + illustrative price | ILLUSTRATIVE (FOREIGN benchmark: EAC-PM price range) | — | — | — | — | N/A, no model |
-| 08 | ToD Bill Simulator | Formula, unit-tested | Illustrative profile | ILLUSTRATIVE (REAL: DERC rates) | — | — | — | — | N/A, no model |
-| 09 | Solar & Net Load | Formula (PVWatts-style), unit-tested | Open-Meteo GHI + forecast | MODELLED (FOREIGN benchmark: rooftop capacity) | — | — | — | — | N/A, no model |
-| 10 | Losses & PF | Formula, unit-tested | User what-if | ILLUSTRATIVE (FOREIGN benchmark: AT&C) | — | — | — | — | N/A, no model |
+| 08 | ToD Bill Simulator | Formula, unit-tested | Illustrative profile | ILLUSTRATIVE (REAL: DERC rates, corrected 2026-11-11 — see docs/DATA_SOURCES_LOG.md) | — | — | — | — | N/A, no model |
+| 09 | Solar & Net Load | Formula (PVWatts-style), unit-tested | Open-Meteo GHI + forecast | MODELLED (FOREIGN benchmark: rooftop capacity; real-plant validation pending Kaggle token) | — | — | — | — | N/A, no model |
+| 10 | Losses & PF | Formula, unit-tested | User what-if | ILLUSTRATIVE (REAL: BRPL/TPDDL AT&C FY2023-24; FOREIGN: national AT&C) | — | — | — | — | N/A, no model |
 | 11a | Theft & Segments — demo fleet | Isolation Forest + K-means | Synthetic smart-meter fleet | SYNTHETIC | precision@k | — | — | 50% @k=6 | N/A, generated data, no train/val/test |
 | 11b | Theft & Segments — SGCC | Logistic regression -> LightGBM | SGCC (Zheng et al., IEEE TII 2018) | FOREIGN | AUC-ROC, PR-AUC, MAP@100/200 | 0.9174 | 0.7511 | 0.7585 | Train/val gap is real but expected for tree models on ~30k consumers with ~10 engineered features; val≈test (no leakage); below paper's stated AUC, not above, so no leakage red flag |
 | 12 | Data & Model Card | None — static summary | docs/MODEL_RESULTS.md, API responses | REAL | — | — | — | — | N/A, documentation only |
