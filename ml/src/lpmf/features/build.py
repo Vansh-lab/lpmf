@@ -127,6 +127,42 @@ def _add_ipl_flag(df: pd.DataFrame) -> pd.DataFrame:
     return out
 
 
+# Phase-4 limitation (docs/MODEL_RESULTS.md): Diwali was the weakest SHAP
+# example day, day MAPE 8.65%, because the single is_holiday flag is the
+# same whether it's Diwali or a smaller observance. Major festivals/
+# national holidays (widespread closures, large load-shape disruption) are
+# split from minor ones (a calendar entry with little practical effect on
+# Delhi's aggregate load) by name, not by data-driven significance testing
+# — a judgment call, documented here rather than inferred from history.
+MAJOR_HOLIDAYS = frozenset(
+    {
+        "Diwali (Deepavali)",
+        "Holi",
+        "Dussehra",
+        "Dussehra; Mahatma Gandhi's Jayanti",
+        "Independence Day",
+        "Republic Day",
+        "Christmas",
+        "Id-ul-Fitr",
+        "Id-ul-Zuha (Bakrid)",
+        "Guru Nanak's Jayanti",
+    }
+)
+
+
+def _add_holiday_tier(df: pd.DataFrame) -> pd.DataFrame:
+    """`holiday_tier`: 0 = not a holiday, 1 = minor holiday, 2 = major
+    (see MAJOR_HOLIDAYS). An experimental feature (docs/MODEL_RESULTS.md,
+    Phase 4 holiday-tier trial): kept only where it improved validation
+    MAPE over the plain is_holiday flag it sits alongside."""
+    out = df.copy()
+    is_major = out["holiday_name"].isin(MAJOR_HOLIDAYS)
+    out["holiday_tier"] = np.select(
+        [is_major, out["is_holiday"] & ~is_major], [2, 1], default=0
+    ).astype(np.int8)
+    return out
+
+
 def _confirm_festival_overlap(df: pd.DataFrame) -> None:
     """Diwali and Holi are already produced by the `holidays` package
     (is_holiday/holiday_name). This just logs that overlap rather than
@@ -234,6 +270,7 @@ def build_features(
     df = _add_night_temp(df)
     df = _add_cyclical_encodings(df)
     df = _add_ipl_flag(df)
+    df = _add_holiday_tier(df)
     _confirm_festival_overlap(df)
     df = _add_targets(df)
     df = _null_targets_crossing_split(df, boundaries)

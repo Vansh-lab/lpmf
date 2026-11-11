@@ -9,8 +9,10 @@ data/synthetic/**
 !data/synthetic/.gitkeep
 data/predictions/
 
-# model artifacts (regenerate via lpmf.models.*)
-models/
+# model artifacts (regenerate via lpmf.models.*) — anchored to the repo
+# root: an unanchored "models/" also matched ml/src/lpmf/models/, silently
+# hiding new files added to that real source package from git status/add.
+/models/
 
 # node
 web/node_modules/
