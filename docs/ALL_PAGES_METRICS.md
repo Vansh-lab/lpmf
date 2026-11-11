@@ -113,6 +113,47 @@ Val/test consumers are assigned under the train-fitted scaler/centroids
 train's — consistent, not an artifact of overfitting the clustering to
 train.
 
+### SGCC improvement attempt (2026-11-11, honest val-only protocol)
+
+Tried to beat the locked model (val PR-AUC 0.2536) with: (a) two new
+engineered features (`weekly_pattern_break`, `recent_volatility_ratio` —
+see `ml/src/lpmf/sgcc/features_experimental.py`), (b) a wider Optuna
+search (60 trials vs 25, regularisation range widened 10x to [1e-8, 50]),
+and (c) a logreg+LightGBM ensemble. **Pre-registered decision metric: val
+PR-AUC** (the same metric the locked model's own Optuna search already
+optimizes against — chosen before running anything, not after seeing
+results, to avoid picking whichever metric makes an improvement look
+best).
+
+| Candidate | Val PR-AUC |
+|---|---|
+| Baseline (locked model, no retraining) | 0.2536 |
+| **Extended features (wider search)** | **0.2676** (winner) |
+| Ensemble (logreg + extended-feature LightGBM) | 0.2562 |
+
+Extended features won on val (+5.5% relative), so — per the protocol —
+it was scored on test **exactly once**:
+
+| Metric | Locked model (test) | Extended features (test, this experiment) |
+|---|---|---|
+| AUC-ROC | **0.7585** | 0.7568 (down) |
+| PR-AUC | 0.2905 | 0.2939 (up) |
+| Precision | 0.2933 | 0.2872 (down) |
+| Recall | 0.3967 | 0.4022 (up) |
+| F1 | 0.3373 | 0.3351 (down) |
+| MAP@100 | 0.57 | 0.52 (down) |
+| MAP@200 | 0.47 | 0.46 (down) |
+
+**Verdict: no clean improvement — kept the original locked model.** The
+extended-feature model beat the pre-registered val metric, but test is a
+genuinely mixed result: PR-AUC and recall ticked up, while AUC-ROC (the
+headline metric used everywhere else in this project), precision, F1,
+MAP@100 and MAP@200 all moved slightly the other way. Rather than declare
+victory on the one metric that improved, or quietly bury the result, the
+honest call is that this isn't a convincing overall win, so **the locked
+model (test AUC-ROC 0.7585) remains the page's production result,
+unchanged.** Full numbers for both candidates: `models/artifacts/sgcc/improvement_experiment.json`.
+
 ## Phase 4 forecast experiment — holiday tier (optional, strict)
 
 A `holiday_tier` (0/1/2: none/minor/major) feature was tried against
