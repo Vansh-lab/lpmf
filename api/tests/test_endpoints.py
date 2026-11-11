@@ -180,6 +180,204 @@ def test_transformer_out_of_range_inputs_are_422(query):
 
 
 def test_every_page_response_carries_provenance():
-    for url in ("/dsm", "/transformer"):
-        assert _get(url)["provenance"] in {"REAL", "SYNTHETIC", "FOREIGN", "ILLUSTRATIVE"}
+    for url in ("/dsm", "/transformer", "/losses", "/tod"):
+        assert _get(url)["provenance"] in {
+            "REAL",
+            "SYNTHETIC",
+            "FOREIGN",
+            "ILLUSTRATIVE",
+            "MODELLED",
+        }
     assert not math.isnan(_get("/dsm")["penalty_rupees"])
+
+
+# --- tod bill -------------------------------------------------------------------
+
+
+def test_tod_bill_default_profile_is_coherent():
+    body = _get("/tod")
+    assert body["total_kwh"] == pytest.approx(10.0)
+    assert body["is_illustrative"] is True
+    assert body["rates"]["provenance"] == "REAL"
+    assert body["rates"]["peak_surcharge_pct"] == pytest.approx(20.0)
+    # Shifting peak load to off-peak never costs more than not shifting.
+    assert body["shifted_tod_bill_rupees"] <= body["tod_bill_rupees"] + 1e-9
+    assert body["shifted_savings_rupees"] >= -1e-9
+
+
+def test_tod_bill_all_peak_costs_more_than_flat():
+    body = _get("/tod?evening_peak_fraction=1.0&shift_fraction=0")
+    assert body["savings_rupees"] < 0
+
+
+def test_tod_bill_shifting_everything_removes_all_peak_cost():
+    body = _get("/tod?evening_peak_fraction=1.0&shift_fraction=1.0")
+    assert body["shifted_savings_rupees"] > 0
+
+
+@pytest.mark.parametrize(
+    "query",
+    ["total_daily_kwh=-1", "evening_peak_fraction=1.5", "shift_fraction=-0.1"],
+)
+def test_tod_bill_invalid_inputs_are_422(query):
+    _get(f"/tod?{query}", 422)
+
+
+# --- solar ------------------------------------------------------------------
+
+
+@needs_15min
+@needs_bands
+def test_solar_default_day_has_96_blocks_with_a_daylight_peak():
+    body = _get("/solar")
+    assert len(body["blocks"]) == 96
+    assert body["provenance"] == "MODELLED"
+    assert body["capacity_benchmark"]["provenance"] == "FOREIGN"
+    night_block = body["blocks"][0]
+    assert night_block["solar_mw"] == 0.0  # 00:00 block: no sunlight
+    assert body["midday_solar_peak_mw"] > 0
+    assert body["peak_net_load_mw"] <= body["peak_load_mw"]
+
+
+@needs_15min
+@needs_bands
+def test_solar_includes_real_plant_validation_when_the_pipeline_has_run():
+    body = _get("/solar")
+    validation = body["real_plant_validation"]
+    if validation is None:
+        pytest.skip("models/artifacts/solar/validation.json not present in this environment")
+    assert validation["provenance"] == "FOREIGN"
+    assert 0 <= validation["plant_1"]["r_squared"] <= 1
+    assert validation["plant_1"]["mape_daytime_pct"] >= 0
+    assert 0 <= validation["plant_1"]["r_squared_daytime"] <= 1
+    assert validation["plant_1"]["wape_daytime_pct"] >= 0
+    assert validation["plant_1"]["nmae_daytime_pct"] >= 0
+    assert validation["diagnostics"]["plant_1_dc_ac_ratio"] is not None
+    assert validation["diagnostics"]["plant_2_dc_ac_ratio"] is not None
+    assert isinstance(validation["diagnostics"]["plant_2_iqr_flagged_inverters"], list)
+    assert "weak fit" in validation["note"]
+    assert "Sensor placement" in validation["root_cause_note"]
+
+
+@needs_15min
+@needs_bands
+def test_solar_zero_capacity_means_net_load_equals_load():
+    body = _get("/solar?capacity_mwp=0")
+    assert all(b["solar_mw"] == 0.0 for b in body["blocks"])
+    assert all(b["net_load_mw"] == b["load_mw"] for b in body["blocks"])
+
+
+@needs_15min
+@needs_bands
+def test_solar_unknown_day_and_bad_inputs():
+    _get("/solar?date=2024-01-01", 404)
+    _get("/solar?capacity_mwp=-1", 422)
+    _get("/solar?performance_ratio=0", 422)
+
+
+# --- iex price ----------------------------------------------------------------
+
+
+@needs_bands
+def test_iex_default_day_has_an_expensive_evening_block():
+    body = _get("/iex")
+    assert len(body["blocks"]) == 96
+    assert body["price_range_benchmark"]["provenance"] == "FOREIGN"
+    assert any(b["is_expensive"] for b in body["blocks"])
+    evening_block = next(b for b in body["blocks"] if b["ts_target"][11:13] == "20")
+    morning_block = next(b for b in body["blocks"] if b["ts_target"][11:13] == "08")
+    assert evening_block["price_per_mwh"] > morning_block["price_per_mwh"]
+    if body["is_illustrative"]:
+        assert "download" in body["manual_download_note"].lower()
+        assert body["real_price_profile"] is None
+    else:
+        assert body["provenance"] == "REAL"
+        assert body["real_price_profile"]["provenance"] == "REAL"
+        assert body["real_price_profile"]["n_days_averaged"] > 0
+        assert body["real_price_profile"]["latest_year"] >= 2024
+        assert len(body["real_price_profile"]["latest_year_hourly_profile_per_mwh"]) == 24
+        assert len(body["real_price_profile"]["yearly_mean_price_per_mwh"]) >= 2
+
+
+@needs_bands
+def test_iex_total_cost_matches_sum_of_blocks():
+    body = _get("/iex")
+    assert body["total_cost_rupees"] == pytest.approx(
+        sum(b["cost_rupees"] for b in body["blocks"]), rel=1e-3
+    )
+
+
+@needs_bands
+def test_iex_unknown_day_and_bad_inputs():
+    _get("/iex?date=2024-01-01", 404)
+    _get("/iex?min_price_per_mwh=9000&max_price_per_mwh=1000", 422)
+    _get("/iex?expensive_hour=24", 422)
+
+
+# --- theft & segments -----------------------------------------------------------
+
+
+def test_theft_default_fleet_is_synthetic_and_internally_consistent():
+    body = _get("/theft")
+    assert body["is_synthetic"] is True
+    assert body["provenance"] == "SYNTHETIC"
+    assert len(body["ranking"]) == body["n_meters"] == 60
+    assert body["n_theft_ground_truth"] == 6 and body["k"] == 6
+    assert sum(c["n_meters"] for c in body["clusters"]) == body["n_meters"]
+    scores = [r["anomaly_score"] for r in body["ranking"]]
+    assert scores == sorted(scores)
+
+
+def test_theft_response_is_deterministic_for_the_same_fleet_size():
+    a = _get("/theft?n_meters=30&n_theft=4")
+    b = _get("/theft?n_meters=30&n_theft=4")
+    assert [r["meter_id"] for r in a["ranking"]] == [r["meter_id"] for r in b["ranking"]]
+
+
+@pytest.mark.parametrize(
+    "query",
+    ["n_theft=100&n_meters=20", "n_clusters=50&n_meters=20", "contamination=0", "n_meters=2"],
+)
+def test_theft_invalid_inputs_are_422(query):
+    _get(f"/theft?{query}", 422)
+
+
+def test_theft_includes_real_sgcc_summary_when_the_pipeline_has_run():
+    body = _get("/theft")
+    sgcc = body["sgcc"]
+    if sgcc is None:
+        pytest.skip("models/artifacts/sgcc/results.json not present in this environment")
+    assert sgcc["provenance"] == "FOREIGN"
+    assert "Delhi DISCOM meter data would be needed for deployment" in sgcc["note"]
+    assert sgcc["dataset"]["n_consumers"] > 0
+    assert sgcc["lightgbm_test"]["auc_roc"] > sgcc["lightgbm_val_auc_roc"] - 0.2
+    assert 0 < sgcc["kmeans_silhouette"]["train"] <= 1
+
+
+# --- losses ---------------------------------------------------------------------
+
+
+def test_losses_defaults_match_the_pf_correction_formula():
+    body = _get("/losses")
+    assert body["capacitor_kvar"] == pytest.approx(553.233, rel=1e-4)
+    assert body["is_illustrative"] is True and body["provenance"] == "ILLUSTRATIVE"
+    assert body["at_c_benchmark"]["provenance"] == "FOREIGN"
+    assert body["at_c_benchmark"]["at_c_loss_pct"] == pytest.approx(15.37)
+    assert body["discom_at_c_benchmark"]["provenance"] == "REAL"
+    assert body["discom_at_c_benchmark"]["brpl_pct"] == pytest.approx(6.58)
+    assert body["discom_at_c_benchmark"]["tpddl_pct"] == pytest.approx(5.91)
+    assert body["discom_at_c_benchmark"]["bypl_pct"] == pytest.approx(7.84)
+
+
+def test_losses_current_drop_reduces_i2r_loss():
+    body = _get("/losses?pf1=0.8&pf2=1.0&current_a=100&resistance_ohm=0.5")
+    assert body["loss_kw"] == pytest.approx(15.0)
+    assert body["loss_reduction_pct"] == pytest.approx(36.0)
+
+
+@pytest.mark.parametrize(
+    "query",
+    ["pf1=0", "pf2=1.5", "pf1=0.95&pf2=0.8", "current_a=-1", "resistance_ohm=-1"],
+)
+def test_losses_invalid_inputs_are_422(query):
+    _get(f"/losses?{query}", 422)

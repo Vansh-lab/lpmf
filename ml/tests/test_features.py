@@ -6,7 +6,7 @@ from __future__ import annotations
 import numpy as np
 import pandas as pd
 
-from lpmf.features.build import HORIZONS, build_features
+from lpmf.features.build import HORIZONS, MAJOR_HOLIDAYS, build_features
 from lpmf.split import SplitBoundaries
 
 
@@ -142,3 +142,25 @@ def test_cyclical_encodings_bounded():
 
     for col in ["sin_hour", "cos_hour", "sin_dow", "cos_dow", "sin_doy", "cos_doy"]:
         assert features[col].between(-1.0001, 1.0001).all()
+
+
+def test_holiday_tier_zero_for_non_holidays():
+    df = _make_frame(n_days=7)
+    boundaries = _even_split(df)
+    features = build_features(df, boundaries)
+    assert (features["holiday_tier"] == 0).all()
+
+
+def test_holiday_tier_two_for_a_major_festival_and_one_for_a_minor_one():
+    df = _make_frame(n_days=3)
+    day0 = df["date"] == df["date"].iloc[0]
+    day1 = df["date"] == df["date"].iloc[96]  # second day's blocks
+    df.loc[day0, "is_holiday"] = True
+    df.loc[day0, "holiday_name"] = "Diwali (Deepavali)"
+    assert "Diwali (Deepavali)" in MAJOR_HOLIDAYS
+    df.loc[day1, "is_holiday"] = True
+    df.loc[day1, "holiday_name"] = "Ram Navami"  # not in MAJOR_HOLIDAYS
+    boundaries = _even_split(df)
+    features = build_features(df, boundaries)
+    assert (features.loc[day0.to_numpy(), "holiday_tier"] == 2).all()
+    assert (features.loc[day1.to_numpy(), "holiday_tier"] == 1).all()

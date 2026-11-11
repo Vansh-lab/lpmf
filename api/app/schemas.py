@@ -119,3 +119,246 @@ class TransformerResponse(Tagged):
     ageing_rate_v: float = Field(description="Relative ageing rate, 1.0 at 98 °C.")
     life_hours_used: float = Field(description="Equivalent hours of life at 98 °C.")
     hours_elapsed: float
+
+
+class AtcBenchmark(BaseModel):
+    at_c_loss_pct: float
+    year: str
+    note: str
+    provenance: ProvenanceKind
+    source: str
+
+
+class DiscomAtcBenchmark(BaseModel):
+    year: str
+    brpl_pct: float
+    bypl_pct: float | None = Field(
+        description="Confirmed from the primary PFC PDF (2026-11-11); None only if a future "
+        "year's source genuinely omits it."
+    )
+    tpddl_pct: float
+    note: str
+    provenance: ProvenanceKind
+    source: str
+
+
+class LossesResponse(Tagged):
+    active_power_kw: float
+    pf1: float
+    pf2: float
+    capacitor_kvar: float
+    current_a: float
+    resistance_ohm: float
+    loss_kw: float
+    loss_reduction_pct: float
+    is_illustrative: Literal[True]
+    at_c_benchmark: AtcBenchmark
+    discom_at_c_benchmark: DiscomAtcBenchmark
+
+
+class TodRates(BaseModel):
+    peak_surcharge_pct: float
+    off_peak_rebate_pct: float
+    order_year: str
+    peak_hours: list[int]
+    off_peak_hours: list[int]
+    note: str
+    provenance: ProvenanceKind
+    source: str
+
+
+class SuspiciousMeter(BaseModel):
+    meter_id: str
+    category: str
+    anomaly_score: float
+    is_theft_ground_truth: bool = Field(
+        description="Only meaningful on this synthetic demo fleet, never a real theft finding."
+    )
+
+
+class MeterCluster(BaseModel):
+    cluster: int
+    n_meters: int
+    mean_shape_pct: list[float] = Field(description="Mean normalised 24h shape, % of daily energy.")
+    meter_ids: list[str]
+
+
+class SgccDataset(BaseModel):
+    n_consumers: int
+    n_days: int
+    theft_rate: float
+
+
+class SgccMetrics(BaseModel):
+    auc_roc: float
+    pr_auc: float
+    precision: float
+    recall: float
+    f1: float
+    accuracy: float
+    all_normal_baseline_accuracy: float
+    map_at_100: float
+    map_at_200: float
+
+
+class SgccSummary(BaseModel):
+    provenance: ProvenanceKind
+    note: str = Field(description="Required FOREIGN-data disclosure for this page.")
+    dataset: SgccDataset
+    logreg_test: SgccMetrics
+    lightgbm_test: SgccMetrics
+    lightgbm_train_auc_roc: float
+    lightgbm_val_auc_roc: float
+    paper_test_auc_roc: float = Field(
+        description="Zheng et al. 2018, as stated in the brief — not independently verified."
+    )
+    kmeans_best_k: int
+    kmeans_silhouette: dict[str, float]
+
+
+class TheftSegmentsResponse(Tagged):
+    n_meters: int
+    n_theft_ground_truth: int
+    precision_at_k: float
+    k: int
+    ranking: list[SuspiciousMeter]
+    clusters: list[MeterCluster]
+    is_synthetic: Literal[True]
+    sgcc: SgccSummary | None = Field(
+        default=None,
+        description="Real SGCC benchmark model-ladder + segments summary, if the "
+        "pipeline has been run; None otherwise. Separate from the synthetic demo "
+        "fleet above, which this page demos live.",
+    )
+
+
+class IexPriceRange(BaseModel):
+    midday_price_per_unit: float
+    night_price_per_unit: float
+    month: str
+    note: str
+    provenance: ProvenanceKind
+    source: str
+
+
+class IexBlock(BaseModel):
+    block: int = Field(ge=1, le=96)
+    ts_target: datetime
+    load_mw: float
+    price_per_mwh: float
+    cost_rupees: float
+    is_expensive: bool = Field(description="Price in the top quartile of this day's curve.")
+
+
+class RealPriceProfileInfo(BaseModel):
+    n_days_averaged: int
+    date_range: list[str]
+    hourly_profile_per_mwh: list[float]
+    latest_year: int
+    latest_year_hourly_profile_per_mwh: list[float]
+    yearly_mean_price_per_mwh: dict[str, float]
+    note: str
+    provenance: ProvenanceKind
+    source: str
+
+
+class IexPriceResponse(Tagged):
+    date: date
+    issued_at: datetime
+    min_price_per_mwh: float
+    max_price_per_mwh: float
+    expensive_hour: int
+    blocks: list[IexBlock]
+    total_cost_rupees: float
+    is_illustrative: bool
+    manual_download_note: str | None = None
+    price_range_benchmark: IexPriceRange
+    real_price_profile: RealPriceProfileInfo | None = Field(
+        default=None,
+        description="Set when the real historical IEX DAM block-of-day profile was used "
+        "instead of the illustrative curve.",
+    )
+
+
+class SolarCapacityBenchmark(BaseModel):
+    capacity_mwp: float
+    as_of: str
+    note: str
+    provenance: ProvenanceKind
+    source: str
+
+
+class SolarBlock(BaseModel):
+    block: int = Field(ge=1, le=96)
+    ts_target: datetime
+    load_mw: float
+    ghi_wm2: float
+    solar_mw: float
+    net_load_mw: float
+
+
+class SolarPlantValidation(BaseModel):
+    plant: int
+    n_blocks_merged: int
+    n_daytime_blocks: int
+    n_daytime_zero_actual_blocks: int
+    fitted_capacity_x_pr_kw: float
+    r_squared: float
+    r_squared_daytime: float
+    mape_daytime_pct: float
+    wape_daytime_pct: float
+    nmae_daytime_pct: float
+
+
+class SolarPlantDiagnostics(BaseModel):
+    plant_1_dc_ac_ratio: float | None
+    plant_2_dc_ac_ratio: float | None
+    plant_2_iqr_flagged_inverters: list[str]
+
+
+class SolarRealPlantValidation(BaseModel):
+    plant_1: SolarPlantValidation
+    plant_2: SolarPlantValidation
+    provenance: ProvenanceKind
+    note: str
+    root_cause_note: str
+    diagnostics: SolarPlantDiagnostics
+    source: str
+
+
+class SolarResponse(Tagged):
+    date: date
+    issued_at: datetime
+    capacity_mwp: float
+    performance_ratio: float
+    blocks: list[SolarBlock]
+    peak_load_mw: float
+    peak_net_load_mw: float
+    midday_solar_peak_mw: float
+    evening_ramp_mw: float = Field(
+        description="Net load rise from the midday solar trough to the evening peak."
+    )
+    capacity_benchmark: SolarCapacityBenchmark
+    real_plant_validation: SolarRealPlantValidation | None = Field(
+        default=None,
+        description="r^2/MAPE of this formula against a real Indian solar plant's paired "
+        "irradiance/power data, if that validation has been run.",
+    )
+
+
+class TodBillResponse(Tagged):
+    flat_bill_rupees: float
+    tod_bill_rupees: float
+    savings_rupees: float
+    hourly_cost_rupees: list[float]
+    hourly_kwh: list[float]
+    total_kwh: float
+    shifted_tod_bill_rupees: float = Field(
+        description="ToD bill after shift_fraction of the evening-peak energy moves to off-peak."
+    )
+    shifted_savings_rupees: float = Field(
+        description="tod_bill_rupees - shifted_tod_bill_rupees: what shifting load saves, on top "
+        "of just being on ToD."
+    )
+    is_illustrative: Literal[True]
+    rates: TodRates

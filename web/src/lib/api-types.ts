@@ -140,6 +140,91 @@ export interface paths {
     patch?: never;
     trace?: never;
   };
+  "/losses": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    /** Losses */
+    get: operations["losses_losses_get"];
+    put?: never;
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  "/tod": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    /** Tod */
+    get: operations["tod_tod_get"];
+    put?: never;
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  "/solar": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    /** Solar */
+    get: operations["solar_solar_get"];
+    put?: never;
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  "/iex": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    /** Iex Price */
+    get: operations["iex_price_iex_get"];
+    put?: never;
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
+  "/theft": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    /** Theft Segments */
+    get: operations["theft_segments_theft_get"];
+    put?: never;
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
 }
 export type webhooks = Record<string, never>;
 export interface components {
@@ -172,6 +257,18 @@ export interface components {
       /** Load Duration Curve */
       load_duration_curve: components["schemas"]["LdcPoint"][];
     };
+    /** AtcBenchmark */
+    AtcBenchmark: {
+      /** At C Loss Pct */
+      at_c_loss_pct: number;
+      /** Year */
+      year: string;
+      /** Note */
+      note: string;
+      provenance: components["schemas"]["ProvenanceKind"];
+      /** Source */
+      source: string;
+    };
     /** BandInfo */
     BandInfo: {
       /** Method */
@@ -180,6 +277,25 @@ export interface components {
       confidence_level: number;
       /** Empirical Test Coverage */
       empirical_test_coverage: number;
+    };
+    /** DiscomAtcBenchmark */
+    DiscomAtcBenchmark: {
+      /** Year */
+      year: string;
+      /** Brpl Pct */
+      brpl_pct: number;
+      /**
+       * Bypl Pct
+       * @description Confirmed from the primary PFC PDF (2026-11-11); None only if a future year's source genuinely omits it.
+       */
+      bypl_pct: number | null;
+      /** Tpddl Pct */
+      tpddl_pct: number;
+      /** Note */
+      note: string;
+      provenance: components["schemas"]["ProvenanceKind"];
+      /** Source */
+      source: string;
     };
     /** DsmResponse */
     DsmResponse: {
@@ -261,6 +377,74 @@ export interface components {
       /** Detail */
       detail?: components["schemas"]["ValidationError"][];
     };
+    /** IexBlock */
+    IexBlock: {
+      /** Block */
+      block: number;
+      /**
+       * Ts Target
+       * Format: date-time
+       */
+      ts_target: string;
+      /** Load Mw */
+      load_mw: number;
+      /** Price Per Mwh */
+      price_per_mwh: number;
+      /** Cost Rupees */
+      cost_rupees: number;
+      /**
+       * Is Expensive
+       * @description Price in the top quartile of this day's curve.
+       */
+      is_expensive: boolean;
+    };
+    /** IexPriceRange */
+    IexPriceRange: {
+      /** Midday Price Per Unit */
+      midday_price_per_unit: number;
+      /** Night Price Per Unit */
+      night_price_per_unit: number;
+      /** Month */
+      month: string;
+      /** Note */
+      note: string;
+      provenance: components["schemas"]["ProvenanceKind"];
+      /** Source */
+      source: string;
+    };
+    /** IexPriceResponse */
+    IexPriceResponse: {
+      provenance: components["schemas"]["ProvenanceKind"];
+      /** Source */
+      source: string;
+      /**
+       * Date
+       * Format: date
+       */
+      date: string;
+      /**
+       * Issued At
+       * Format: date-time
+       */
+      issued_at: string;
+      /** Min Price Per Mwh */
+      min_price_per_mwh: number;
+      /** Max Price Per Mwh */
+      max_price_per_mwh: number;
+      /** Expensive Hour */
+      expensive_hour: number;
+      /** Blocks */
+      blocks: components["schemas"]["IexBlock"][];
+      /** Total Cost Rupees */
+      total_cost_rupees: number;
+      /** Is Illustrative */
+      is_illustrative: boolean;
+      /** Manual Download Note */
+      manual_download_note?: string | null;
+      price_range_benchmark: components["schemas"]["IexPriceRange"];
+      /** @description Set when the real historical IEX DAM block-of-day profile was used instead of the illustrative curve. */
+      real_price_profile?: components["schemas"]["RealPriceProfileInfo"] | null;
+    };
     /** LdcPoint */
     LdcPoint: {
       /**
@@ -270,6 +454,49 @@ export interface components {
       rank_pct: number;
       /** Load Mw */
       load_mw: number;
+    };
+    /** LossesResponse */
+    LossesResponse: {
+      provenance: components["schemas"]["ProvenanceKind"];
+      /** Source */
+      source: string;
+      /** Active Power Kw */
+      active_power_kw: number;
+      /** Pf1 */
+      pf1: number;
+      /** Pf2 */
+      pf2: number;
+      /** Capacitor Kvar */
+      capacitor_kvar: number;
+      /** Current A */
+      current_a: number;
+      /** Resistance Ohm */
+      resistance_ohm: number;
+      /** Loss Kw */
+      loss_kw: number;
+      /** Loss Reduction Pct */
+      loss_reduction_pct: number;
+      /**
+       * Is Illustrative
+       * @constant
+       */
+      is_illustrative: true;
+      at_c_benchmark: components["schemas"]["AtcBenchmark"];
+      discom_at_c_benchmark: components["schemas"]["DiscomAtcBenchmark"];
+    };
+    /** MeterCluster */
+    MeterCluster: {
+      /** Cluster */
+      cluster: number;
+      /** N Meters */
+      n_meters: number;
+      /**
+       * Mean Shape Pct
+       * @description Mean normalised 24h shape, % of daily energy.
+       */
+      mean_shape_pct: number[];
+      /** Meter Ids */
+      meter_ids: string[];
     };
     /** OverviewResponse */
     OverviewResponse: {
@@ -311,7 +538,29 @@ export interface components {
      *     — do not rename without updating both sides of the stack.
      * @enum {string}
      */
-    ProvenanceKind: "REAL" | "SYNTHETIC" | "FOREIGN" | "ILLUSTRATIVE";
+    ProvenanceKind: "REAL" | "SYNTHETIC" | "FOREIGN" | "ILLUSTRATIVE" | "MODELLED";
+    /** RealPriceProfileInfo */
+    RealPriceProfileInfo: {
+      /** N Days Averaged */
+      n_days_averaged: number;
+      /** Date Range */
+      date_range: string[];
+      /** Hourly Profile Per Mwh */
+      hourly_profile_per_mwh: number[];
+      /** Latest Year */
+      latest_year: number;
+      /** Latest Year Hourly Profile Per Mwh */
+      latest_year_hourly_profile_per_mwh: number[];
+      /** Yearly Mean Price Per Mwh */
+      yearly_mean_price_per_mwh: {
+        [key: string]: number;
+      };
+      /** Note */
+      note: string;
+      provenance: components["schemas"]["ProvenanceKind"];
+      /** Source */
+      source: string;
+    };
     /** ScatterPoint */
     ScatterPoint: {
       /**
@@ -323,6 +572,63 @@ export interface components {
       heat_index_c: number;
       /** Load Mw */
       load_mw: number;
+    };
+    /** SgccDataset */
+    SgccDataset: {
+      /** N Consumers */
+      n_consumers: number;
+      /** N Days */
+      n_days: number;
+      /** Theft Rate */
+      theft_rate: number;
+    };
+    /** SgccMetrics */
+    SgccMetrics: {
+      /** Auc Roc */
+      auc_roc: number;
+      /** Pr Auc */
+      pr_auc: number;
+      /** Precision */
+      precision: number;
+      /** Recall */
+      recall: number;
+      /** F1 */
+      f1: number;
+      /** Accuracy */
+      accuracy: number;
+      /** All Normal Baseline Accuracy */
+      all_normal_baseline_accuracy: number;
+      /** Map At 100 */
+      map_at_100: number;
+      /** Map At 200 */
+      map_at_200: number;
+    };
+    /** SgccSummary */
+    SgccSummary: {
+      provenance: components["schemas"]["ProvenanceKind"];
+      /**
+       * Note
+       * @description Required FOREIGN-data disclosure for this page.
+       */
+      note: string;
+      dataset: components["schemas"]["SgccDataset"];
+      logreg_test: components["schemas"]["SgccMetrics"];
+      lightgbm_test: components["schemas"]["SgccMetrics"];
+      /** Lightgbm Train Auc Roc */
+      lightgbm_train_auc_roc: number;
+      /** Lightgbm Val Auc Roc */
+      lightgbm_val_auc_roc: number;
+      /**
+       * Paper Test Auc Roc
+       * @description Zheng et al. 2018, as stated in the brief — not independently verified.
+       */
+      paper_test_auc_roc: number;
+      /** Kmeans Best K */
+      kmeans_best_k: number;
+      /** Kmeans Silhouette */
+      kmeans_silhouette: {
+        [key: string]: number;
+      };
     };
     /** ShapContributor */
     ShapContributor: {
@@ -342,6 +648,208 @@ export interface components {
       day_label: string;
       /** Top Contributors */
       top_contributors: components["schemas"]["ShapContributor"][];
+    };
+    /** SolarBlock */
+    SolarBlock: {
+      /** Block */
+      block: number;
+      /**
+       * Ts Target
+       * Format: date-time
+       */
+      ts_target: string;
+      /** Load Mw */
+      load_mw: number;
+      /** Ghi Wm2 */
+      ghi_wm2: number;
+      /** Solar Mw */
+      solar_mw: number;
+      /** Net Load Mw */
+      net_load_mw: number;
+    };
+    /** SolarCapacityBenchmark */
+    SolarCapacityBenchmark: {
+      /** Capacity Mwp */
+      capacity_mwp: number;
+      /** As Of */
+      as_of: string;
+      /** Note */
+      note: string;
+      provenance: components["schemas"]["ProvenanceKind"];
+      /** Source */
+      source: string;
+    };
+    /** SolarPlantDiagnostics */
+    SolarPlantDiagnostics: {
+      /** Plant 1 Dc Ac Ratio */
+      plant_1_dc_ac_ratio: number | null;
+      /** Plant 2 Dc Ac Ratio */
+      plant_2_dc_ac_ratio: number | null;
+      /** Plant 2 Iqr Flagged Inverters */
+      plant_2_iqr_flagged_inverters: string[];
+    };
+    /** SolarPlantValidation */
+    SolarPlantValidation: {
+      /** Plant */
+      plant: number;
+      /** N Blocks Merged */
+      n_blocks_merged: number;
+      /** N Daytime Blocks */
+      n_daytime_blocks: number;
+      /** N Daytime Zero Actual Blocks */
+      n_daytime_zero_actual_blocks: number;
+      /** Fitted Capacity X Pr Kw */
+      fitted_capacity_x_pr_kw: number;
+      /** R Squared */
+      r_squared: number;
+      /** R Squared Daytime */
+      r_squared_daytime: number;
+      /** Mape Daytime Pct */
+      mape_daytime_pct: number;
+      /** Wape Daytime Pct */
+      wape_daytime_pct: number;
+      /** Nmae Daytime Pct */
+      nmae_daytime_pct: number;
+    };
+    /** SolarRealPlantValidation */
+    SolarRealPlantValidation: {
+      plant_1: components["schemas"]["SolarPlantValidation"];
+      plant_2: components["schemas"]["SolarPlantValidation"];
+      provenance: components["schemas"]["ProvenanceKind"];
+      /** Note */
+      note: string;
+      /** Root Cause Note */
+      root_cause_note: string;
+      diagnostics: components["schemas"]["SolarPlantDiagnostics"];
+      /** Source */
+      source: string;
+    };
+    /** SolarResponse */
+    SolarResponse: {
+      provenance: components["schemas"]["ProvenanceKind"];
+      /** Source */
+      source: string;
+      /**
+       * Date
+       * Format: date
+       */
+      date: string;
+      /**
+       * Issued At
+       * Format: date-time
+       */
+      issued_at: string;
+      /** Capacity Mwp */
+      capacity_mwp: number;
+      /** Performance Ratio */
+      performance_ratio: number;
+      /** Blocks */
+      blocks: components["schemas"]["SolarBlock"][];
+      /** Peak Load Mw */
+      peak_load_mw: number;
+      /** Peak Net Load Mw */
+      peak_net_load_mw: number;
+      /** Midday Solar Peak Mw */
+      midday_solar_peak_mw: number;
+      /**
+       * Evening Ramp Mw
+       * @description Net load rise from the midday solar trough to the evening peak.
+       */
+      evening_ramp_mw: number;
+      capacity_benchmark: components["schemas"]["SolarCapacityBenchmark"];
+      /** @description r^2/MAPE of this formula against a real Indian solar plant's paired irradiance/power data, if that validation has been run. */
+      real_plant_validation?: components["schemas"]["SolarRealPlantValidation"] | null;
+    };
+    /** SuspiciousMeter */
+    SuspiciousMeter: {
+      /** Meter Id */
+      meter_id: string;
+      /** Category */
+      category: string;
+      /** Anomaly Score */
+      anomaly_score: number;
+      /**
+       * Is Theft Ground Truth
+       * @description Only meaningful on this synthetic demo fleet, never a real theft finding.
+       */
+      is_theft_ground_truth: boolean;
+    };
+    /** TheftSegmentsResponse */
+    TheftSegmentsResponse: {
+      provenance: components["schemas"]["ProvenanceKind"];
+      /** Source */
+      source: string;
+      /** N Meters */
+      n_meters: number;
+      /** N Theft Ground Truth */
+      n_theft_ground_truth: number;
+      /** Precision At K */
+      precision_at_k: number;
+      /** K */
+      k: number;
+      /** Ranking */
+      ranking: components["schemas"]["SuspiciousMeter"][];
+      /** Clusters */
+      clusters: components["schemas"]["MeterCluster"][];
+      /**
+       * Is Synthetic
+       * @constant
+       */
+      is_synthetic: true;
+      /** @description Real SGCC benchmark model-ladder + segments summary, if the pipeline has been run; None otherwise. Separate from the synthetic demo fleet above, which this page demos live. */
+      sgcc?: components["schemas"]["SgccSummary"] | null;
+    };
+    /** TodBillResponse */
+    TodBillResponse: {
+      provenance: components["schemas"]["ProvenanceKind"];
+      /** Source */
+      source: string;
+      /** Flat Bill Rupees */
+      flat_bill_rupees: number;
+      /** Tod Bill Rupees */
+      tod_bill_rupees: number;
+      /** Savings Rupees */
+      savings_rupees: number;
+      /** Hourly Cost Rupees */
+      hourly_cost_rupees: number[];
+      /** Hourly Kwh */
+      hourly_kwh: number[];
+      /** Total Kwh */
+      total_kwh: number;
+      /**
+       * Shifted Tod Bill Rupees
+       * @description ToD bill after shift_fraction of the evening-peak energy moves to off-peak.
+       */
+      shifted_tod_bill_rupees: number;
+      /**
+       * Shifted Savings Rupees
+       * @description tod_bill_rupees - shifted_tod_bill_rupees: what shifting load saves, on top of just being on ToD.
+       */
+      shifted_savings_rupees: number;
+      /**
+       * Is Illustrative
+       * @constant
+       */
+      is_illustrative: true;
+      rates: components["schemas"]["TodRates"];
+    };
+    /** TodRates */
+    TodRates: {
+      /** Peak Surcharge Pct */
+      peak_surcharge_pct: number;
+      /** Off Peak Rebate Pct */
+      off_peak_rebate_pct: number;
+      /** Order Year */
+      order_year: string;
+      /** Peak Hours */
+      peak_hours: number[];
+      /** Off Peak Hours */
+      off_peak_hours: number[];
+      /** Note */
+      note: string;
+      provenance: components["schemas"]["ProvenanceKind"];
+      /** Source */
+      source: string;
     };
     /** TransformerResponse */
     TransformerResponse: {
@@ -633,6 +1141,181 @@ export interface operations {
         };
         content: {
           "application/json": components["schemas"]["TransformerResponse"];
+        };
+      };
+      /** @description Validation Error */
+      422: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["HTTPValidationError"];
+        };
+      };
+    };
+  };
+  losses_losses_get: {
+    parameters: {
+      query?: {
+        active_power_kw?: number;
+        pf1?: number;
+        pf2?: number;
+        current_a?: number;
+        resistance_ohm?: number;
+      };
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      /** @description Successful Response */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["LossesResponse"];
+        };
+      };
+      /** @description Validation Error */
+      422: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["HTTPValidationError"];
+        };
+      };
+    };
+  };
+  tod_tod_get: {
+    parameters: {
+      query?: {
+        /** @description Illustrative household profile. */
+        total_daily_kwh?: number;
+        /** @description Share of the day's kWh used in the DERC peak hours (14:00-17:00 & 22:00-01:00, May-Sep). */
+        evening_peak_fraction?: number;
+        /** @description Share of that peak energy shifted to off-peak hours. */
+        shift_fraction?: number;
+      };
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      /** @description Successful Response */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["TodBillResponse"];
+        };
+      };
+      /** @description Validation Error */
+      422: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["HTTPValidationError"];
+        };
+      };
+    };
+  };
+  solar_solar_get: {
+    parameters: {
+      query?: {
+        /** @description Test-set day; default latest. */
+        date?: string | null;
+        /** @description Rooftop fleet capacity, MWp. */
+        capacity_mwp?: number;
+        performance_ratio?: number;
+      };
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      /** @description Successful Response */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["SolarResponse"];
+        };
+      };
+      /** @description Validation Error */
+      422: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["HTTPValidationError"];
+        };
+      };
+    };
+  };
+  iex_price_iex_get: {
+    parameters: {
+      query?: {
+        /** @description Test-set day; default latest. */
+        date?: string | null;
+        min_price_per_mwh?: number;
+        max_price_per_mwh?: number;
+        expensive_hour?: number;
+      };
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      /** @description Successful Response */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["IexPriceResponse"];
+        };
+      };
+      /** @description Validation Error */
+      422: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["HTTPValidationError"];
+        };
+      };
+    };
+  };
+  theft_segments_theft_get: {
+    parameters: {
+      query?: {
+        n_meters?: number;
+        n_theft?: number;
+        n_clusters?: number;
+        contamination?: number;
+      };
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      /** @description Successful Response */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["TheftSegmentsResponse"];
         };
       };
       /** @description Validation Error */

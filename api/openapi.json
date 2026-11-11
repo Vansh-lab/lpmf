@@ -421,6 +421,414 @@
           }
         }
       }
+    },
+    "/losses": {
+      "get": {
+        "tags": [
+          "losses"
+        ],
+        "summary": "Losses",
+        "operationId": "losses_losses_get",
+        "parameters": [
+          {
+            "name": "active_power_kw",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "number",
+              "minimum": 0,
+              "default": 1000.0,
+              "title": "Active Power Kw"
+            }
+          },
+          {
+            "name": "pf1",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "number",
+              "maximum": 1,
+              "exclusiveMinimum": 0,
+              "default": 0.75,
+              "title": "Pf1"
+            }
+          },
+          {
+            "name": "pf2",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "number",
+              "maximum": 1,
+              "exclusiveMinimum": 0,
+              "default": 0.95,
+              "title": "Pf2"
+            }
+          },
+          {
+            "name": "current_a",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "number",
+              "minimum": 0,
+              "default": 300.0,
+              "title": "Current A"
+            }
+          },
+          {
+            "name": "resistance_ohm",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "number",
+              "minimum": 0,
+              "default": 0.1,
+              "title": "Resistance Ohm"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/LossesResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/tod": {
+      "get": {
+        "tags": [
+          "tod"
+        ],
+        "summary": "Tod",
+        "operationId": "tod_tod_get",
+        "parameters": [
+          {
+            "name": "total_daily_kwh",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "number",
+              "minimum": 0,
+              "description": "Illustrative household profile.",
+              "default": 10.0,
+              "title": "Total Daily Kwh"
+            },
+            "description": "Illustrative household profile."
+          },
+          {
+            "name": "evening_peak_fraction",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "number",
+              "maximum": 1,
+              "minimum": 0,
+              "description": "Share of the day's kWh used in the DERC peak hours (14:00-17:00 & 22:00-01:00, May-Sep).",
+              "default": 0.4,
+              "title": "Evening Peak Fraction"
+            },
+            "description": "Share of the day's kWh used in the DERC peak hours (14:00-17:00 & 22:00-01:00, May-Sep)."
+          },
+          {
+            "name": "shift_fraction",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "number",
+              "maximum": 1,
+              "minimum": 0,
+              "description": "Share of that peak energy shifted to off-peak hours.",
+              "default": 0.3,
+              "title": "Shift Fraction"
+            },
+            "description": "Share of that peak energy shifted to off-peak hours."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TodBillResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/solar": {
+      "get": {
+        "tags": [
+          "solar"
+        ],
+        "summary": "Solar",
+        "operationId": "solar_solar_get",
+        "parameters": [
+          {
+            "name": "date",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "format": "date"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Test-set day; default latest.",
+              "title": "Date"
+            },
+            "description": "Test-set day; default latest."
+          },
+          {
+            "name": "capacity_mwp",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "number",
+              "minimum": 0,
+              "description": "Rooftop fleet capacity, MWp.",
+              "default": 302.0,
+              "title": "Capacity Mwp"
+            },
+            "description": "Rooftop fleet capacity, MWp."
+          },
+          {
+            "name": "performance_ratio",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "number",
+              "maximum": 1,
+              "exclusiveMinimum": 0,
+              "default": 0.8,
+              "title": "Performance Ratio"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SolarResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/iex": {
+      "get": {
+        "tags": [
+          "iex"
+        ],
+        "summary": "Iex Price",
+        "operationId": "iex_price_iex_get",
+        "parameters": [
+          {
+            "name": "date",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "format": "date"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Test-set day; default latest.",
+              "title": "Date"
+            },
+            "description": "Test-set day; default latest."
+          },
+          {
+            "name": "min_price_per_mwh",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "number",
+              "minimum": 0,
+              "default": 1110.0,
+              "title": "Min Price Per Mwh"
+            }
+          },
+          {
+            "name": "max_price_per_mwh",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "number",
+              "minimum": 0,
+              "default": 9710.0,
+              "title": "Max Price Per Mwh"
+            }
+          },
+          {
+            "name": "expensive_hour",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "maximum": 23,
+              "minimum": 0,
+              "default": 20,
+              "title": "Expensive Hour"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/IexPriceResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/theft": {
+      "get": {
+        "tags": [
+          "theft"
+        ],
+        "summary": "Theft Segments",
+        "operationId": "theft_segments_theft_get",
+        "parameters": [
+          {
+            "name": "n_meters",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "maximum": 500,
+              "minimum": 5,
+              "default": 60,
+              "title": "N Meters"
+            }
+          },
+          {
+            "name": "n_theft",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "maximum": 50,
+              "minimum": 0,
+              "default": 6,
+              "title": "N Theft"
+            }
+          },
+          {
+            "name": "n_clusters",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "maximum": 10,
+              "minimum": 1,
+              "default": 3,
+              "title": "N Clusters"
+            }
+          },
+          {
+            "name": "contamination",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "number",
+              "exclusiveMaximum": 0.5,
+              "exclusiveMinimum": 0,
+              "default": 0.1,
+              "title": "Contamination"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TheftSegmentsResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
     }
   },
   "components": {
@@ -487,6 +895,38 @@
         ],
         "title": "AnalyticsResponse"
       },
+      "AtcBenchmark": {
+        "properties": {
+          "at_c_loss_pct": {
+            "type": "number",
+            "title": "At C Loss Pct"
+          },
+          "year": {
+            "type": "string",
+            "title": "Year"
+          },
+          "note": {
+            "type": "string",
+            "title": "Note"
+          },
+          "provenance": {
+            "$ref": "#/components/schemas/ProvenanceKind"
+          },
+          "source": {
+            "type": "string",
+            "title": "Source"
+          }
+        },
+        "type": "object",
+        "required": [
+          "at_c_loss_pct",
+          "year",
+          "note",
+          "provenance",
+          "source"
+        ],
+        "title": "AtcBenchmark"
+      },
       "BandInfo": {
         "properties": {
           "method": {
@@ -509,6 +949,56 @@
           "empirical_test_coverage"
         ],
         "title": "BandInfo"
+      },
+      "DiscomAtcBenchmark": {
+        "properties": {
+          "year": {
+            "type": "string",
+            "title": "Year"
+          },
+          "brpl_pct": {
+            "type": "number",
+            "title": "Brpl Pct"
+          },
+          "bypl_pct": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Bypl Pct",
+            "description": "Confirmed from the primary PFC PDF (2026-11-11); None only if a future year's source genuinely omits it."
+          },
+          "tpddl_pct": {
+            "type": "number",
+            "title": "Tpddl Pct"
+          },
+          "note": {
+            "type": "string",
+            "title": "Note"
+          },
+          "provenance": {
+            "$ref": "#/components/schemas/ProvenanceKind"
+          },
+          "source": {
+            "type": "string",
+            "title": "Source"
+          }
+        },
+        "type": "object",
+        "required": [
+          "year",
+          "brpl_pct",
+          "bypl_pct",
+          "tpddl_pct",
+          "note",
+          "provenance",
+          "source"
+        ],
+        "title": "DiscomAtcBenchmark"
       },
       "DsmResponse": {
         "properties": {
@@ -716,6 +1206,173 @@
         "type": "object",
         "title": "HTTPValidationError"
       },
+      "IexBlock": {
+        "properties": {
+          "block": {
+            "type": "integer",
+            "maximum": 96.0,
+            "minimum": 1.0,
+            "title": "Block"
+          },
+          "ts_target": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Ts Target"
+          },
+          "load_mw": {
+            "type": "number",
+            "title": "Load Mw"
+          },
+          "price_per_mwh": {
+            "type": "number",
+            "title": "Price Per Mwh"
+          },
+          "cost_rupees": {
+            "type": "number",
+            "title": "Cost Rupees"
+          },
+          "is_expensive": {
+            "type": "boolean",
+            "title": "Is Expensive",
+            "description": "Price in the top quartile of this day's curve."
+          }
+        },
+        "type": "object",
+        "required": [
+          "block",
+          "ts_target",
+          "load_mw",
+          "price_per_mwh",
+          "cost_rupees",
+          "is_expensive"
+        ],
+        "title": "IexBlock"
+      },
+      "IexPriceRange": {
+        "properties": {
+          "midday_price_per_unit": {
+            "type": "number",
+            "title": "Midday Price Per Unit"
+          },
+          "night_price_per_unit": {
+            "type": "number",
+            "title": "Night Price Per Unit"
+          },
+          "month": {
+            "type": "string",
+            "title": "Month"
+          },
+          "note": {
+            "type": "string",
+            "title": "Note"
+          },
+          "provenance": {
+            "$ref": "#/components/schemas/ProvenanceKind"
+          },
+          "source": {
+            "type": "string",
+            "title": "Source"
+          }
+        },
+        "type": "object",
+        "required": [
+          "midday_price_per_unit",
+          "night_price_per_unit",
+          "month",
+          "note",
+          "provenance",
+          "source"
+        ],
+        "title": "IexPriceRange"
+      },
+      "IexPriceResponse": {
+        "properties": {
+          "provenance": {
+            "$ref": "#/components/schemas/ProvenanceKind"
+          },
+          "source": {
+            "type": "string",
+            "title": "Source"
+          },
+          "date": {
+            "type": "string",
+            "format": "date",
+            "title": "Date"
+          },
+          "issued_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Issued At"
+          },
+          "min_price_per_mwh": {
+            "type": "number",
+            "title": "Min Price Per Mwh"
+          },
+          "max_price_per_mwh": {
+            "type": "number",
+            "title": "Max Price Per Mwh"
+          },
+          "expensive_hour": {
+            "type": "integer",
+            "title": "Expensive Hour"
+          },
+          "blocks": {
+            "items": {
+              "$ref": "#/components/schemas/IexBlock"
+            },
+            "type": "array",
+            "title": "Blocks"
+          },
+          "total_cost_rupees": {
+            "type": "number",
+            "title": "Total Cost Rupees"
+          },
+          "is_illustrative": {
+            "type": "boolean",
+            "title": "Is Illustrative"
+          },
+          "manual_download_note": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Manual Download Note"
+          },
+          "price_range_benchmark": {
+            "$ref": "#/components/schemas/IexPriceRange"
+          },
+          "real_price_profile": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/RealPriceProfileInfo"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Set when the real historical IEX DAM block-of-day profile was used instead of the illustrative curve."
+          }
+        },
+        "type": "object",
+        "required": [
+          "provenance",
+          "source",
+          "date",
+          "issued_at",
+          "min_price_per_mwh",
+          "max_price_per_mwh",
+          "expensive_hour",
+          "blocks",
+          "total_cost_rupees",
+          "is_illustrative",
+          "price_range_benchmark"
+        ],
+        "title": "IexPriceResponse"
+      },
       "LdcPoint": {
         "properties": {
           "rank_pct": {
@@ -734,6 +1391,112 @@
           "load_mw"
         ],
         "title": "LdcPoint"
+      },
+      "LossesResponse": {
+        "properties": {
+          "provenance": {
+            "$ref": "#/components/schemas/ProvenanceKind"
+          },
+          "source": {
+            "type": "string",
+            "title": "Source"
+          },
+          "active_power_kw": {
+            "type": "number",
+            "title": "Active Power Kw"
+          },
+          "pf1": {
+            "type": "number",
+            "title": "Pf1"
+          },
+          "pf2": {
+            "type": "number",
+            "title": "Pf2"
+          },
+          "capacitor_kvar": {
+            "type": "number",
+            "title": "Capacitor Kvar"
+          },
+          "current_a": {
+            "type": "number",
+            "title": "Current A"
+          },
+          "resistance_ohm": {
+            "type": "number",
+            "title": "Resistance Ohm"
+          },
+          "loss_kw": {
+            "type": "number",
+            "title": "Loss Kw"
+          },
+          "loss_reduction_pct": {
+            "type": "number",
+            "title": "Loss Reduction Pct"
+          },
+          "is_illustrative": {
+            "type": "boolean",
+            "const": true,
+            "title": "Is Illustrative"
+          },
+          "at_c_benchmark": {
+            "$ref": "#/components/schemas/AtcBenchmark"
+          },
+          "discom_at_c_benchmark": {
+            "$ref": "#/components/schemas/DiscomAtcBenchmark"
+          }
+        },
+        "type": "object",
+        "required": [
+          "provenance",
+          "source",
+          "active_power_kw",
+          "pf1",
+          "pf2",
+          "capacitor_kvar",
+          "current_a",
+          "resistance_ohm",
+          "loss_kw",
+          "loss_reduction_pct",
+          "is_illustrative",
+          "at_c_benchmark",
+          "discom_at_c_benchmark"
+        ],
+        "title": "LossesResponse"
+      },
+      "MeterCluster": {
+        "properties": {
+          "cluster": {
+            "type": "integer",
+            "title": "Cluster"
+          },
+          "n_meters": {
+            "type": "integer",
+            "title": "N Meters"
+          },
+          "mean_shape_pct": {
+            "items": {
+              "type": "number"
+            },
+            "type": "array",
+            "title": "Mean Shape Pct",
+            "description": "Mean normalised 24h shape, % of daily energy."
+          },
+          "meter_ids": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Meter Ids"
+          }
+        },
+        "type": "object",
+        "required": [
+          "cluster",
+          "n_meters",
+          "mean_shape_pct",
+          "meter_ids"
+        ],
+        "title": "MeterCluster"
       },
       "OverviewResponse": {
         "properties": {
@@ -800,10 +1563,75 @@
           "REAL",
           "SYNTHETIC",
           "FOREIGN",
-          "ILLUSTRATIVE"
+          "ILLUSTRATIVE",
+          "MODELLED"
         ],
         "title": "ProvenanceKind",
         "description": "The four provenance kinds. Values are the exact strings persisted to\ndisk (parquet columns, JSON, etc.) and sent over the wire to the web app\n— do not rename without updating both sides of the stack."
+      },
+      "RealPriceProfileInfo": {
+        "properties": {
+          "n_days_averaged": {
+            "type": "integer",
+            "title": "N Days Averaged"
+          },
+          "date_range": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Date Range"
+          },
+          "hourly_profile_per_mwh": {
+            "items": {
+              "type": "number"
+            },
+            "type": "array",
+            "title": "Hourly Profile Per Mwh"
+          },
+          "latest_year": {
+            "type": "integer",
+            "title": "Latest Year"
+          },
+          "latest_year_hourly_profile_per_mwh": {
+            "items": {
+              "type": "number"
+            },
+            "type": "array",
+            "title": "Latest Year Hourly Profile Per Mwh"
+          },
+          "yearly_mean_price_per_mwh": {
+            "additionalProperties": {
+              "type": "number"
+            },
+            "type": "object",
+            "title": "Yearly Mean Price Per Mwh"
+          },
+          "note": {
+            "type": "string",
+            "title": "Note"
+          },
+          "provenance": {
+            "$ref": "#/components/schemas/ProvenanceKind"
+          },
+          "source": {
+            "type": "string",
+            "title": "Source"
+          }
+        },
+        "type": "object",
+        "required": [
+          "n_days_averaged",
+          "date_range",
+          "hourly_profile_per_mwh",
+          "latest_year",
+          "latest_year_hourly_profile_per_mwh",
+          "yearly_mean_price_per_mwh",
+          "note",
+          "provenance",
+          "source"
+        ],
+        "title": "RealPriceProfileInfo"
       },
       "ScatterPoint": {
         "properties": {
@@ -828,6 +1656,141 @@
           "load_mw"
         ],
         "title": "ScatterPoint"
+      },
+      "SgccDataset": {
+        "properties": {
+          "n_consumers": {
+            "type": "integer",
+            "title": "N Consumers"
+          },
+          "n_days": {
+            "type": "integer",
+            "title": "N Days"
+          },
+          "theft_rate": {
+            "type": "number",
+            "title": "Theft Rate"
+          }
+        },
+        "type": "object",
+        "required": [
+          "n_consumers",
+          "n_days",
+          "theft_rate"
+        ],
+        "title": "SgccDataset"
+      },
+      "SgccMetrics": {
+        "properties": {
+          "auc_roc": {
+            "type": "number",
+            "title": "Auc Roc"
+          },
+          "pr_auc": {
+            "type": "number",
+            "title": "Pr Auc"
+          },
+          "precision": {
+            "type": "number",
+            "title": "Precision"
+          },
+          "recall": {
+            "type": "number",
+            "title": "Recall"
+          },
+          "f1": {
+            "type": "number",
+            "title": "F1"
+          },
+          "accuracy": {
+            "type": "number",
+            "title": "Accuracy"
+          },
+          "all_normal_baseline_accuracy": {
+            "type": "number",
+            "title": "All Normal Baseline Accuracy"
+          },
+          "map_at_100": {
+            "type": "number",
+            "title": "Map At 100"
+          },
+          "map_at_200": {
+            "type": "number",
+            "title": "Map At 200"
+          }
+        },
+        "type": "object",
+        "required": [
+          "auc_roc",
+          "pr_auc",
+          "precision",
+          "recall",
+          "f1",
+          "accuracy",
+          "all_normal_baseline_accuracy",
+          "map_at_100",
+          "map_at_200"
+        ],
+        "title": "SgccMetrics"
+      },
+      "SgccSummary": {
+        "properties": {
+          "provenance": {
+            "$ref": "#/components/schemas/ProvenanceKind"
+          },
+          "note": {
+            "type": "string",
+            "title": "Note",
+            "description": "Required FOREIGN-data disclosure for this page."
+          },
+          "dataset": {
+            "$ref": "#/components/schemas/SgccDataset"
+          },
+          "logreg_test": {
+            "$ref": "#/components/schemas/SgccMetrics"
+          },
+          "lightgbm_test": {
+            "$ref": "#/components/schemas/SgccMetrics"
+          },
+          "lightgbm_train_auc_roc": {
+            "type": "number",
+            "title": "Lightgbm Train Auc Roc"
+          },
+          "lightgbm_val_auc_roc": {
+            "type": "number",
+            "title": "Lightgbm Val Auc Roc"
+          },
+          "paper_test_auc_roc": {
+            "type": "number",
+            "title": "Paper Test Auc Roc",
+            "description": "Zheng et al. 2018, as stated in the brief — not independently verified."
+          },
+          "kmeans_best_k": {
+            "type": "integer",
+            "title": "Kmeans Best K"
+          },
+          "kmeans_silhouette": {
+            "additionalProperties": {
+              "type": "number"
+            },
+            "type": "object",
+            "title": "Kmeans Silhouette"
+          }
+        },
+        "type": "object",
+        "required": [
+          "provenance",
+          "note",
+          "dataset",
+          "logreg_test",
+          "lightgbm_test",
+          "lightgbm_train_auc_roc",
+          "lightgbm_val_auc_roc",
+          "paper_test_auc_roc",
+          "kmeans_best_k",
+          "kmeans_silhouette"
+        ],
+        "title": "SgccSummary"
       },
       "ShapContributor": {
         "properties": {
@@ -873,6 +1836,526 @@
           "top_contributors"
         ],
         "title": "ShapSummary"
+      },
+      "SolarBlock": {
+        "properties": {
+          "block": {
+            "type": "integer",
+            "maximum": 96.0,
+            "minimum": 1.0,
+            "title": "Block"
+          },
+          "ts_target": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Ts Target"
+          },
+          "load_mw": {
+            "type": "number",
+            "title": "Load Mw"
+          },
+          "ghi_wm2": {
+            "type": "number",
+            "title": "Ghi Wm2"
+          },
+          "solar_mw": {
+            "type": "number",
+            "title": "Solar Mw"
+          },
+          "net_load_mw": {
+            "type": "number",
+            "title": "Net Load Mw"
+          }
+        },
+        "type": "object",
+        "required": [
+          "block",
+          "ts_target",
+          "load_mw",
+          "ghi_wm2",
+          "solar_mw",
+          "net_load_mw"
+        ],
+        "title": "SolarBlock"
+      },
+      "SolarCapacityBenchmark": {
+        "properties": {
+          "capacity_mwp": {
+            "type": "number",
+            "title": "Capacity Mwp"
+          },
+          "as_of": {
+            "type": "string",
+            "title": "As Of"
+          },
+          "note": {
+            "type": "string",
+            "title": "Note"
+          },
+          "provenance": {
+            "$ref": "#/components/schemas/ProvenanceKind"
+          },
+          "source": {
+            "type": "string",
+            "title": "Source"
+          }
+        },
+        "type": "object",
+        "required": [
+          "capacity_mwp",
+          "as_of",
+          "note",
+          "provenance",
+          "source"
+        ],
+        "title": "SolarCapacityBenchmark"
+      },
+      "SolarPlantDiagnostics": {
+        "properties": {
+          "plant_1_dc_ac_ratio": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Plant 1 Dc Ac Ratio"
+          },
+          "plant_2_dc_ac_ratio": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Plant 2 Dc Ac Ratio"
+          },
+          "plant_2_iqr_flagged_inverters": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Plant 2 Iqr Flagged Inverters"
+          }
+        },
+        "type": "object",
+        "required": [
+          "plant_1_dc_ac_ratio",
+          "plant_2_dc_ac_ratio",
+          "plant_2_iqr_flagged_inverters"
+        ],
+        "title": "SolarPlantDiagnostics"
+      },
+      "SolarPlantValidation": {
+        "properties": {
+          "plant": {
+            "type": "integer",
+            "title": "Plant"
+          },
+          "n_blocks_merged": {
+            "type": "integer",
+            "title": "N Blocks Merged"
+          },
+          "n_daytime_blocks": {
+            "type": "integer",
+            "title": "N Daytime Blocks"
+          },
+          "n_daytime_zero_actual_blocks": {
+            "type": "integer",
+            "title": "N Daytime Zero Actual Blocks"
+          },
+          "fitted_capacity_x_pr_kw": {
+            "type": "number",
+            "title": "Fitted Capacity X Pr Kw"
+          },
+          "r_squared": {
+            "type": "number",
+            "title": "R Squared"
+          },
+          "r_squared_daytime": {
+            "type": "number",
+            "title": "R Squared Daytime"
+          },
+          "mape_daytime_pct": {
+            "type": "number",
+            "title": "Mape Daytime Pct"
+          },
+          "wape_daytime_pct": {
+            "type": "number",
+            "title": "Wape Daytime Pct"
+          },
+          "nmae_daytime_pct": {
+            "type": "number",
+            "title": "Nmae Daytime Pct"
+          }
+        },
+        "type": "object",
+        "required": [
+          "plant",
+          "n_blocks_merged",
+          "n_daytime_blocks",
+          "n_daytime_zero_actual_blocks",
+          "fitted_capacity_x_pr_kw",
+          "r_squared",
+          "r_squared_daytime",
+          "mape_daytime_pct",
+          "wape_daytime_pct",
+          "nmae_daytime_pct"
+        ],
+        "title": "SolarPlantValidation"
+      },
+      "SolarRealPlantValidation": {
+        "properties": {
+          "plant_1": {
+            "$ref": "#/components/schemas/SolarPlantValidation"
+          },
+          "plant_2": {
+            "$ref": "#/components/schemas/SolarPlantValidation"
+          },
+          "provenance": {
+            "$ref": "#/components/schemas/ProvenanceKind"
+          },
+          "note": {
+            "type": "string",
+            "title": "Note"
+          },
+          "root_cause_note": {
+            "type": "string",
+            "title": "Root Cause Note"
+          },
+          "diagnostics": {
+            "$ref": "#/components/schemas/SolarPlantDiagnostics"
+          },
+          "source": {
+            "type": "string",
+            "title": "Source"
+          }
+        },
+        "type": "object",
+        "required": [
+          "plant_1",
+          "plant_2",
+          "provenance",
+          "note",
+          "root_cause_note",
+          "diagnostics",
+          "source"
+        ],
+        "title": "SolarRealPlantValidation"
+      },
+      "SolarResponse": {
+        "properties": {
+          "provenance": {
+            "$ref": "#/components/schemas/ProvenanceKind"
+          },
+          "source": {
+            "type": "string",
+            "title": "Source"
+          },
+          "date": {
+            "type": "string",
+            "format": "date",
+            "title": "Date"
+          },
+          "issued_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Issued At"
+          },
+          "capacity_mwp": {
+            "type": "number",
+            "title": "Capacity Mwp"
+          },
+          "performance_ratio": {
+            "type": "number",
+            "title": "Performance Ratio"
+          },
+          "blocks": {
+            "items": {
+              "$ref": "#/components/schemas/SolarBlock"
+            },
+            "type": "array",
+            "title": "Blocks"
+          },
+          "peak_load_mw": {
+            "type": "number",
+            "title": "Peak Load Mw"
+          },
+          "peak_net_load_mw": {
+            "type": "number",
+            "title": "Peak Net Load Mw"
+          },
+          "midday_solar_peak_mw": {
+            "type": "number",
+            "title": "Midday Solar Peak Mw"
+          },
+          "evening_ramp_mw": {
+            "type": "number",
+            "title": "Evening Ramp Mw",
+            "description": "Net load rise from the midday solar trough to the evening peak."
+          },
+          "capacity_benchmark": {
+            "$ref": "#/components/schemas/SolarCapacityBenchmark"
+          },
+          "real_plant_validation": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/SolarRealPlantValidation"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "r^2/MAPE of this formula against a real Indian solar plant's paired irradiance/power data, if that validation has been run."
+          }
+        },
+        "type": "object",
+        "required": [
+          "provenance",
+          "source",
+          "date",
+          "issued_at",
+          "capacity_mwp",
+          "performance_ratio",
+          "blocks",
+          "peak_load_mw",
+          "peak_net_load_mw",
+          "midday_solar_peak_mw",
+          "evening_ramp_mw",
+          "capacity_benchmark"
+        ],
+        "title": "SolarResponse"
+      },
+      "SuspiciousMeter": {
+        "properties": {
+          "meter_id": {
+            "type": "string",
+            "title": "Meter Id"
+          },
+          "category": {
+            "type": "string",
+            "title": "Category"
+          },
+          "anomaly_score": {
+            "type": "number",
+            "title": "Anomaly Score"
+          },
+          "is_theft_ground_truth": {
+            "type": "boolean",
+            "title": "Is Theft Ground Truth",
+            "description": "Only meaningful on this synthetic demo fleet, never a real theft finding."
+          }
+        },
+        "type": "object",
+        "required": [
+          "meter_id",
+          "category",
+          "anomaly_score",
+          "is_theft_ground_truth"
+        ],
+        "title": "SuspiciousMeter"
+      },
+      "TheftSegmentsResponse": {
+        "properties": {
+          "provenance": {
+            "$ref": "#/components/schemas/ProvenanceKind"
+          },
+          "source": {
+            "type": "string",
+            "title": "Source"
+          },
+          "n_meters": {
+            "type": "integer",
+            "title": "N Meters"
+          },
+          "n_theft_ground_truth": {
+            "type": "integer",
+            "title": "N Theft Ground Truth"
+          },
+          "precision_at_k": {
+            "type": "number",
+            "title": "Precision At K"
+          },
+          "k": {
+            "type": "integer",
+            "title": "K"
+          },
+          "ranking": {
+            "items": {
+              "$ref": "#/components/schemas/SuspiciousMeter"
+            },
+            "type": "array",
+            "title": "Ranking"
+          },
+          "clusters": {
+            "items": {
+              "$ref": "#/components/schemas/MeterCluster"
+            },
+            "type": "array",
+            "title": "Clusters"
+          },
+          "is_synthetic": {
+            "type": "boolean",
+            "const": true,
+            "title": "Is Synthetic"
+          },
+          "sgcc": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/SgccSummary"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Real SGCC benchmark model-ladder + segments summary, if the pipeline has been run; None otherwise. Separate from the synthetic demo fleet above, which this page demos live."
+          }
+        },
+        "type": "object",
+        "required": [
+          "provenance",
+          "source",
+          "n_meters",
+          "n_theft_ground_truth",
+          "precision_at_k",
+          "k",
+          "ranking",
+          "clusters",
+          "is_synthetic"
+        ],
+        "title": "TheftSegmentsResponse"
+      },
+      "TodBillResponse": {
+        "properties": {
+          "provenance": {
+            "$ref": "#/components/schemas/ProvenanceKind"
+          },
+          "source": {
+            "type": "string",
+            "title": "Source"
+          },
+          "flat_bill_rupees": {
+            "type": "number",
+            "title": "Flat Bill Rupees"
+          },
+          "tod_bill_rupees": {
+            "type": "number",
+            "title": "Tod Bill Rupees"
+          },
+          "savings_rupees": {
+            "type": "number",
+            "title": "Savings Rupees"
+          },
+          "hourly_cost_rupees": {
+            "items": {
+              "type": "number"
+            },
+            "type": "array",
+            "title": "Hourly Cost Rupees"
+          },
+          "hourly_kwh": {
+            "items": {
+              "type": "number"
+            },
+            "type": "array",
+            "title": "Hourly Kwh"
+          },
+          "total_kwh": {
+            "type": "number",
+            "title": "Total Kwh"
+          },
+          "shifted_tod_bill_rupees": {
+            "type": "number",
+            "title": "Shifted Tod Bill Rupees",
+            "description": "ToD bill after shift_fraction of the evening-peak energy moves to off-peak."
+          },
+          "shifted_savings_rupees": {
+            "type": "number",
+            "title": "Shifted Savings Rupees",
+            "description": "tod_bill_rupees - shifted_tod_bill_rupees: what shifting load saves, on top of just being on ToD."
+          },
+          "is_illustrative": {
+            "type": "boolean",
+            "const": true,
+            "title": "Is Illustrative"
+          },
+          "rates": {
+            "$ref": "#/components/schemas/TodRates"
+          }
+        },
+        "type": "object",
+        "required": [
+          "provenance",
+          "source",
+          "flat_bill_rupees",
+          "tod_bill_rupees",
+          "savings_rupees",
+          "hourly_cost_rupees",
+          "hourly_kwh",
+          "total_kwh",
+          "shifted_tod_bill_rupees",
+          "shifted_savings_rupees",
+          "is_illustrative",
+          "rates"
+        ],
+        "title": "TodBillResponse"
+      },
+      "TodRates": {
+        "properties": {
+          "peak_surcharge_pct": {
+            "type": "number",
+            "title": "Peak Surcharge Pct"
+          },
+          "off_peak_rebate_pct": {
+            "type": "number",
+            "title": "Off Peak Rebate Pct"
+          },
+          "order_year": {
+            "type": "string",
+            "title": "Order Year"
+          },
+          "peak_hours": {
+            "items": {
+              "type": "integer"
+            },
+            "type": "array",
+            "title": "Peak Hours"
+          },
+          "off_peak_hours": {
+            "items": {
+              "type": "integer"
+            },
+            "type": "array",
+            "title": "Off Peak Hours"
+          },
+          "note": {
+            "type": "string",
+            "title": "Note"
+          },
+          "provenance": {
+            "$ref": "#/components/schemas/ProvenanceKind"
+          },
+          "source": {
+            "type": "string",
+            "title": "Source"
+          }
+        },
+        "type": "object",
+        "required": [
+          "peak_surcharge_pct",
+          "off_peak_rebate_pct",
+          "order_year",
+          "peak_hours",
+          "off_peak_hours",
+          "note",
+          "provenance",
+          "source"
+        ],
+        "title": "TodRates"
       },
       "TransformerResponse": {
         "properties": {

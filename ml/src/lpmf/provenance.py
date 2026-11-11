@@ -35,6 +35,13 @@ class ProvenanceKind(str, Enum):
     """Not real and not meant to be mistaken for a forecast — illustrative
     placeholders, worked examples, mock UI states."""
 
+    MODELLED = "MODELLED"
+    """A published physical/engineering model applied to real, measured
+    inputs, estimating something not itself directly metered — e.g. rooftop
+    solar output from real irradiance and a public capacity figure. Distinct
+    from REAL (a direct measurement) and from ILLUSTRATIVE (a worked example
+    on made-up inputs): the inputs are real, only the output is an estimate."""
+
 
 # Human-readable label + short description, used by the QA report and any
 # place that renders a legend.
@@ -43,6 +50,7 @@ PROVENANCE_LABELS: dict[ProvenanceKind, str] = {
     ProvenanceKind.SYNTHETIC: "Synthetic",
     ProvenanceKind.FOREIGN: "Foreign",
     ProvenanceKind.ILLUSTRATIVE: "Illustrative",
+    ProvenanceKind.MODELLED: "Modelled",
 }
 
 

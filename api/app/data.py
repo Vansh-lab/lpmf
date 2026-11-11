@@ -45,7 +45,8 @@ def _require(path: Path) -> Path:
 def fifteen_min() -> pd.DataFrame:
     """Real Delhi SLDC load joined with weather, one row per 15-min block."""
     return pd.read_parquet(
-        _require(FIFTEEN_MIN), columns=["ts_ist", "date", "load_mw", "heat_index_c"]
+        _require(FIFTEEN_MIN),
+        columns=["ts_ist", "date", "load_mw", "heat_index_c", "ghi_wm2"],
     )
 
 

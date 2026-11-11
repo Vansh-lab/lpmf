@@ -28,6 +28,15 @@ export enum ProvenanceKind {
    * placeholders, worked examples, mock UI states.
    */
   ILLUSTRATIVE = "ILLUSTRATIVE",
+  /**
+   * A published physical/engineering model applied to real, measured
+   * inputs, estimating something not itself directly metered — e.g.
+   * rooftop solar output from real irradiance and a public capacity
+   * figure. Distinct from REAL (a direct measurement) and ILLUSTRATIVE (a
+   * worked example on made-up inputs): the inputs are real, only the
+   * output is an estimate.
+   */
+  MODELLED = "MODELLED",
 }
 
 export const PROVENANCE_LABELS: Record<ProvenanceKind, string> = {
@@ -35,6 +44,7 @@ export const PROVENANCE_LABELS: Record<ProvenanceKind, string> = {
   [ProvenanceKind.SYNTHETIC]: "Synthetic",
   [ProvenanceKind.FOREIGN]: "Foreign",
   [ProvenanceKind.ILLUSTRATIVE]: "Illustrative",
+  [ProvenanceKind.MODELLED]: "Modelled",
 };
 
 export function isReal(kind: ProvenanceKind): boolean {

@@ -260,12 +260,20 @@ const MODEL_DETAILS: { label: string; value: string }[] = [
   },
 ];
 
-const SPLITS: { name: string; dates: string; note: string; mape: string; naive: string }[] = [
+const SPLITS: {
+  name: string;
+  dates: string;
+  note: string;
+  mape: string;
+  accuracy: string;
+  naive: string;
+}[] = [
   {
     name: "Train",
     dates: "1 Apr 2023 – 12 Jan 2025",
     note: "Model fitting.",
     mape: "2.29%",
+    accuracy: "97.71%",
     naive: "5.44%",
   },
   {
@@ -273,6 +281,7 @@ const SPLITS: { name: string; dates: string; note: string; mape: string; naive: 
     dates: "13 Jan 2025 – 12 Jul 2025",
     note: "Tuning objective, early stopping and band calibration, so not untouched. Contains the Mar–Jun 2025 summer (May 5.5%, Jun 6.0% MAPE), which is therefore not independent evidence of summer accuracy.",
     mape: "4.29%",
+    accuracy: "95.71%",
     naive: "5.97%",
   },
   {
@@ -280,6 +289,7 @@ const SPLITS: { name: string; dates: string; note: string; mape: string; naive: 
     dates: "13 Jul 2025 – 12 Jan 2026",
     note: "Target days; first origin 12 Jul 2025, 23:45. 184 calendar days, 183 with data (8 Jan 2026 has no test targets). Never used for tuning or early stopping, but it informed the feature design (limitation 01). Contains no Mar–Jun summer.",
     mape: "3.93%",
+    accuracy: "96.07%",
     naive: "5.16%",
   },
 ];
@@ -292,6 +302,16 @@ function ModelCard() {
       source="docs/MODEL_RESULTS.md"
     >
       <div className="grid gap-4 sm:grid-cols-2">
+        <KpiCard
+          label="Test accuracy"
+          value="96.07"
+          unit="%"
+          hint={
+            <SourcedHint source="docs/MODEL_RESULTS.md · test">
+              100 − MAPE. Train 97.71%, validation 95.71% (see the split table below).
+            </SourcedHint>
+          }
+        />
         <KpiCard
           label="Test MAPE"
           value="3.93"
@@ -371,7 +391,9 @@ function ModelCard() {
             <p className="mt-1 text-xs text-[color:var(--lpmf-muted)]">{s.note}</p>
             <p className="mt-2 text-xs text-[color:var(--foreground)]">
               LightGBM <span className="lpmf-mono font-semibold">{s.mape}</span>
-              <span className="text-[color:var(--lpmf-muted)]"> · naive </span>
+              <span className="text-[color:var(--lpmf-muted)]"> MAPE · </span>
+              <span className="lpmf-mono font-semibold">{s.accuracy}</span>
+              <span className="text-[color:var(--lpmf-muted)]"> acc. · naive </span>
               <span className="lpmf-mono">{s.naive}</span>
             </p>
           </div>
