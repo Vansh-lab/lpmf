@@ -132,7 +132,10 @@ class AtcBenchmark(BaseModel):
 class DiscomAtcBenchmark(BaseModel):
     year: str
     brpl_pct: float
-    bypl_pct: float | None = Field(description="None: genuinely not stated in the source.")
+    bypl_pct: float | None = Field(
+        description="Confirmed from the primary PFC PDF (2026-11-11); None only if a future "
+        "year's source genuinely omits it."
+    )
     tpddl_pct: float
     note: str
     provenance: ProvenanceKind

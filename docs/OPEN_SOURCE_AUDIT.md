@@ -120,21 +120,20 @@ licence isn't fully clear is flagged explicitly rather than glossed over.
   benchmark figures alongside it.
 - **Source:** national AT&C 15.37% (FY2023) from Rajya Sabha unstarred
   question 266, 27 Nov 2024 — a primary government record, publicly
-  published, no licence concerns. BRPL (6.58%) / TPDDL (5.91%), FY2023-24,
-  via Power Line (powerline.net.in, 8 Jul 2025), itself summarizing PFC's
-  "Report on Performance of State Power Utilities 2023-24".
-- **Verification:** the national figure was read from the primary
-  parliamentary record. **The DISCOM-specific figures were NOT read from
-  PFC's own primary report** — the PFC PDF could not be fetched (a
-  persistent TLS certificate error, not transient), so we relied on a
-  secondary trade-press source that quotes PFC's figures verbatim. **This
-  is flagged**: BRPL/TPDDL numbers are one level removed from the primary
-  source. BYPL's figure could not be confirmed in any source actually
-  read (two conflicting numbers appeared only in unverified search
-  snippets) and is reported as unavailable rather than guessed.
-- **Flag:** **BRPL/TPDDL AT&C figures are from a secondary source, not
-  the primary PFC report** (which was unreachable); **BYPL figure is
-  genuinely unconfirmed.**
+  published, no licence concerns. BRPL (6.58%) / BYPL (7.84%) / TPDDL
+  (5.91%), FY2023-24, from PFC's own primary PDF, "Report on Performance
+  of Power Utilities 2023-24" (cms.pfcindia.co.in, published Oct 2025),
+  Annexure 1.8 "AT&C Losses", PDF p.102 / printed p.76.
+- **Verification (updated 2026-11-11):** the national figure was read
+  from the primary parliamentary record, as before. The DISCOM-specific
+  figures were re-investigated this round and are now read directly from
+  PFC's own primary report, not a secondary summary — the earlier TLS
+  error was specific to the fetch tool first tried; plain `curl` and the
+  built-in browser both reached the PDF without issue. BRPL and TPDDL
+  exactly match the previously-used secondary source; BYPL's figure
+  (previously unconfirmed) is now read directly from the primary PDF.
+- **Flag: resolved.** All three DISCOM AT&C figures are now from PFC's
+  primary report, directly read (not a secondary summary, not guessed).
 
 ## 11a · Theft & Segments — demo fleet
 
@@ -191,7 +190,7 @@ licence isn't fully clear is flagged explicitly rather than glossed over.
 |---|---|---|
 | 07 | IEX Price | Uploader's identity/collection method undocumented (mitigated by a 4/4 exact match against the official site) |
 | 09 | Solar & Net Load | Validation dataset's licence is "© Original Authors" (not an open licence); capacity benchmark is a secondary citation |
-| 10 | Losses & PF | BRPL/TPDDL AT&C from a secondary source (primary PFC PDF unreachable); BYPL genuinely unconfirmed |
+| 10 | Losses & PF | ~~BRPL/TPDDL AT&C from a secondary source; BYPL genuinely unconfirmed~~ — **resolved 2026-11-11**, all three now from PFC's primary PDF |
 | 11b | Theft & Segments (SGCC) | No formal licence on the GitHub data release (citation-only norm); an author-citation error in the PPT was found and corrected this round |
 
 No other page carries an unresolved source or licence flag.

@@ -17,7 +17,7 @@ behind each one.
 | 07 | IEX Price | Delhi SLDC (load) + real IEX DAM price history (Kaggle `mukund604/...`, 2018-2024) | REAL (FOREIGN benchmark) | Formula + real historical block-of-day average price, unit-tested | EAC-PM WP 53/2026: ₹1.11-9.71/unit (May 2026) | Real historical hourly range ₹3.05-6.13/unit (6.7-yr average, narrower than EAC-PM's one-month snapshot) | — | N/A, no model. Falls back to the old illustrative curve if the pipeline hasn't been run (gitignored artifacts) |
 | 08 | ToD Bill Simulator | Illustrative profile | ILLUSTRATIVE (REAL: DERC rates) | Formula, unit-tested | DERC Tariff Schedule FY 2020-21, clause 3(d), p.2 (directly read) | Peak 20% surcharge, off-peak 20% rebate, 14-17h & 22-01h / 04-10h, May-Sep | — | N/A, no model. Rates/hours corrected 2026-11-11 (were unverified 30%/25%, 17-22h/22-6h) |
 | 09 | Solar & Net Load | Open-Meteo GHI + forecast | MODELLED (FOREIGN benchmark + FOREIGN real-plant validation) | Formula (PVWatts-style), unit-tested | MNRE/Renewable Watch: ~302 MWp Delhi rooftop (Mar 2025); real-plant validation (Kaggle `anikannal/solar-power-generation-data`), diagnosed per-inverter (2026-11-11) | Midday solar peak 149 MW at PR=0.8; formula validated (daytime-only, see Note below): Plant 1 r²=0.970/MAPE 6.2%/WAPE 5.7%/nMAE 5.7%; Plant 2 r²=0.208/MAPE 36.2%/WAPE 28.7%/nMAE 28.7% (fit genuinely weak, diagnosed not guessed) | — | N/A, no model |
-| 10 | Losses & PF | User what-if | ILLUSTRATIVE (REAL: BRPL/TPDDL AT&C) | Formula, unit-tested | National AT&C 15.37% (FY2023, Rajya Sabha PQ 266); BRPL 6.58% / TPDDL 5.91% (FY2023-24, PFC via Power Line) | PF-correction/I²R worked examples | — | N/A, no model. BYPL unconfirmed — not guessed |
+| 10 | Losses & PF | User what-if | ILLUSTRATIVE (REAL: BRPL/BYPL/TPDDL AT&C) | Formula, unit-tested | National AT&C 15.37% (FY2023, Rajya Sabha PQ 266); BRPL 6.58% / BYPL 7.84% / TPDDL 5.91% (FY2023-24, PFC primary PDF, Annexure 1.8, p.76) | PF-correction/I²R worked examples | — | N/A, no model. All three DISCOMs now from the primary source |
 | 11a | Theft & Segments — demo fleet | Synthetic smart-meter fleet | SYNTHETIC | Isolation Forest + K-means | — | precision@6 = 50% | — | N/A, generated data |
 | 11b | Theft & Segments — SGCC | SGCC (Zheng et al., IEEE TII 2018) | FOREIGN | Logistic regression → LightGBM | Paper: ~0.78 AUC-ROC (as stated in the brief; not independently verified) | **Test AUC-ROC 0.7585** (below paper — no leakage flag); improvement attempt (new features + wider search) tried, val improved but test was mixed (AUC-ROC down 0.7568) — **no improvement adopted, original kept** | 0.9174 / 0.7511 / 0.7585 | Train/val gap expected for tree model capacity; val≈test, no leakage |
 | 12 | Data & Model Card | docs/MODEL_RESULTS.md, API responses | REAL | None — static summary | — | — | — | N/A, documentation only |
@@ -28,11 +28,14 @@ behind each one.
   base tariff order since 30.09.2021; later orders (including any dated
   "FY 2025-26") only adjust the fuel-cost (PPAC) surcharge, not the ToD
   structure, hours, or percentages.
-- **BYPL AT&C:** genuinely absent from the one directly-read secondary
-  source (Power Line's summary of PFC's FY2023-24 report); two conflicting
-  unverified numbers turned up in search snippets but were not confirmed
-  by reading a source directly, so BYPL is reported as unavailable rather
-  than guessed.
+- **BYPL AT&C — now confirmed (2026-11-11):** the primary PFC PDF
+  ("Report on Performance of Power Utilities 2023-24", cms.pfcindia.co.in,
+  published Oct 2025) was located and fetched directly (an earlier TLS
+  cert error was tooling-specific — plain `curl` and the built-in browser
+  both reached it fine). Its Annexure 1.8 "AT&C Losses" table (PDF p.102 /
+  printed p.76, 2023-24 columns) gives BRPL 6.58%, BYPL 7.84%, TPDDL 5.91%
+  — BRPL and TPDDL exactly match the earlier secondary-source figures, and
+  BYPL's 7.84% is now a primary-source-confirmed number, not a guess.
 - **IEX / Solar real-data upgrades (done 2026-11-11):** both downloaded
   from Kaggle after resolving a token-format issue (the token was in the
   newer `~/.kaggle/access_token` format, not `kaggle.json`). IEX now uses
@@ -63,15 +66,36 @@ number. Re-diagnosed properly per request:
 4. **Result:** applying that rule to Plant 2 flags **zero inverters** — the smooth continuum has no statistical outlier to exclude. (The same rule applied to Plant 1, for consistency, flags 2 of its 22 inverters — both still only ≈2.5% zero-rate against a fleet that's otherwise ≈0%; noted for completeness, not acted on since Plant 1 wasn't the page in question.)
 5. **Conclusion:** no inverters are excluded from Plant 2's validation. Its weak daytime fit is reported honestly as-is rather than removing inverters to improve it — doing so without rule (3) above would be cherry-picking data to match the model, not a data-quality decision.
 
-### Root cause (possible reasons, not independently confirmed)
+### Root cause — actively investigated (2026-11-11), not just hypothesized
 
-**Plant 2 has a genuinely weak fit; this reflects a limitation of real-world data, not a mistake in the formula.** The formula itself is sound — Plant 1's data fits it very well (daytime r²=0.970) under the exact same code. Four plausible, non-exclusive physical reasons for Plant 2 specifically (none independently confirmed here — this dataset doesn't carry the extra fields, e.g. per-inverter GPS position or rated capacity, needed to test them directly):
+**Plant 2 has a genuinely weak fit; this reflects a limitation of real-world data, not a mistake in the formula or a removable bug.** The formula itself is sound — Plant 1's data fits it very well (daytime r²=0.970) under the exact same code. Per this round's explicit instruction ("only change the number if a real bug is found — never remove an inverter without data-quality proof"), four concrete hypotheses were tested against the raw data, not just listed. **No fixable bug was found in any of them, so r²=0.208 stands unchanged as final.**
 
-- **Sensor placement.** Each plant has only **one** weather sensor for the *whole* site, but the plant's 22 inverters are physically spread across it. If Plant 2's sensor sits somewhere unrepresentative of the average conditions the inverters actually see (more shaded, or in a sunnier spot than most panels), a single irradiance reading would poorly predict the aggregate output no matter how good the formula is. This is plausibly the single biggest factor, since it would affect every inverter at once rather than just a few.
-- **Inverter clipping.** If Plant 2's inverters are sized close to (or below) the DC array's peak output, AC output flattens at high irradiance even as GHI keeps rising — a real, well-known nonlinearity that a linear GHI→power formula can't capture, and would lower r² specifically at the high-irradiance end.
-- **Partial shading.** Trees, structures or neighbouring rows casting moving shadows across parts of the array through the day would decouple local panel output from the single sensor's reading, especially inverters on the shaded side.
-- **Soiling / wiring differences.** Dust, bird droppings or uneven cleaning schedules across 22 separate inverter strings, plus differences in wiring/cable losses between strings, would all add consumer-level noise the formula has no way to see from GHI alone.
+1. **Timestamp misalignment — ruled out.** Shifted Plant 2's irradiance series by -4 to +4 fifteen-minute blocks relative to AC power and refit at each shift. Daytime-only r² peaks exactly at shift=0 (**0.2085**) and falls at every other shift (e.g. 0.0585 at -1, 0.0604 at +1, down to about -0.02 at ±4); daytime MAPE likewise bottoms out at shift=0 (36.21%) and rises sharply elsewhere (51–157% at ±3/±4). The data is already correctly time-aligned.
+2. **Capacity mismatch / clipping — ruled out.** Per-inverter max(AC)/max(DC) ratio is flat at ≈0.975 (std 7.6e-5) across all 22 inverters — not the inverter-to-inverter spread a clipping fault would produce. Pooled ratio-by-DC-power-decile is a smooth curve (0.966 → peak 0.982 at mid-range → 0.975 at the top decile), the normal shape of inverter efficiency vs. load, not the sharp top-decile collapse a real clipping signature would show. **Independent corroboration:** a Kaggle community thread on this exact dataset ("Let's Discuss the Outliers", user ElbioPeña) found the same ≈97.5% AC/DC ratio for Plant 2 and states it sits within the normal 93–98% real-world inverter-efficiency range — confirming the well-known decimal-point DC_POWER bug (≈9.75% ratio) is Plant-1-specific only and never touched Plant 2.
+3. **Sensor placement / calibration — structural, not a fixable bug.** The dataset documents one weather-sensor array per plant, shared by that plant's 22 physically-distributed inverters (confirmed directly from the dataset's own structure, not inferred). A second Kaggle discussion thread on this dataset ("DC power variation among different inverters at the same timestamp", user Rajas Bhingarde) independently explains that disagreement between inverters under one shared sensor is expected — from per-string wiring/config differences, uneven irradiation across the array, and local temperature effects near some strings — which is exactly the structural mismatch (1 sensor vs. 22 inverters) this page's formula can't correct for. This is a property of the public dataset, not something to patch.
+4. **Soiling / shading day pattern — checked, no discrete fault found.** Per-day WAPE (using the single globally-fit slope) across all 34 days ranges continuously from 10.5% to 85.8% (mean 30.1%, std 13.0%) — a smooth spread, not two separable "good days" vs. "bad days" clusters, so there's no single faulty day/equipment event to isolate. The worst days do concentrate in the back half of the 34-day window (11–17 June 2020 among them) and show amplified swings in *both* directions (actual/predicted ratio from 0.65× to 1.6×) rather than a one-way decline — the signature of increasing patchy-cloud variability (Nasik's monsoon onset is early-to-mid June, right where this window's worst days sit), not progressive soiling or equipment degradation, both of which would show a one-directional drift instead.
 
-None of these can be distinguished from the others with only this dataset's 4 columns (AC/DC power, irradiance, temperature) — doing so would need per-inverter metadata this public release doesn't include. The honest conclusion stands either way: **Plant 2's weak fit is a real-world data limitation, not a formula problem.**
+**Conclusion:** no genuine bug was found — timestamp alignment, inverter capacity, and the AC/DC ratio are all exactly as they should be, and the weak fit traces to the dataset's own structural limitation (one shared weather sensor for 22 spatially spread inverters), compounded by rising cloud-pattern variability later in the sampling window. This matches the real-world-data-limitation pattern noted independently by other users analysing this same public dataset. Per the "no removal without data-quality proof" rule, **zero Plant 2 inverters are excluded** (the Tukey IQR check on per-inverter zero-rate, documented below, found no statistical outlier either).
 
 Full per-inverter table: `models/artifacts/solar/validation.json` (gitignored; regenerate with `python -m lpmf.solar.pipeline`).
+
+### Losses & PF — BYPL AT&C confirmed from the primary PFC PDF (2026-11-11)
+
+| DISCOM | Old (secondary source) | New (primary PFC PDF, Annexure 1.8, p.76) | Change |
+|---|---|---|---|
+| BRPL | 6.58% | **6.58%** | Unchanged — exact match, now primary-sourced |
+| BYPL | unconfirmed (`None`) | **7.84%** | **Newly confirmed** — was genuinely absent from the secondary source |
+| TPDDL | 5.91% | **5.91%** | Unchanged — exact match, now primary-sourced |
+
+The primary PDF — PFC, "Report on Performance of Power Utilities 2023-24"
+(published Oct 2025) — was located via PFC's own performance-report page
+(`pfcindia.co.in/en/pages/operations/performance-report-of-power-utilities`,
+a JS single-page app; the direct PDF link was only visible after rendering
+it in a browser) and fetched directly from
+`cms.pfcindia.co.in/media/documents/Report%20on%20Perfromance%20of%20Power%20Utilities%202023-24(1).pdf`
+(the earlier TLS-cert failure was specific to one fetch tool — plain
+`curl` and the browser both reached the same host without issue). All
+three figures are read from Section 1, Annexure 1.8 "AT&C Losses", 2023-24
+columns, PDF page 102 (printed page 76), Delhi state-sector rows
+(BRPL/BYPL/TPDDL). DERC's tariff/ARR orders were not needed as a fallback
+since the primary PFC PDF was found directly.

@@ -32,26 +32,29 @@ AT_C_BENCHMARK = {
     "provenance": ProvenanceKind.FOREIGN,
 }
 
-# DISCOM-specific AT&C loss %, FY2023-24, from PFC's "Report on Performance
-# of State Power Utilities 2023-24" — read via a secondary (trade-press)
-# summary, not the primary PFC PDF directly (pfcindia.co.in's TLS cert
-# could not be verified by our fetch tooling). BYPL is genuinely not stated
-# in the source article (confirmed by reading the full article text, not
-# just a search snippet) — reported as None rather than guessed.
+# DISCOM-specific AT&C loss %, FY2023-24, read directly from the PRIMARY PFC
+# PDF ("Report on Performance of Power Utilities 2023-24", published Oct
+# 2025, cms.pfcindia.co.in). Annexure 1.8 ("AT&C Losses", 2023-24 columns),
+# PDF page 102 / printed page 76, Delhi state-sector rows. All three DISCOM
+# figures below are read directly from that table -- BRPL and TPDDL both
+# re-confirm (exact match) the earlier secondary-source numbers, and BYPL's
+# figure (previously unconfirmed) is now available for the first time.
 DISCOM_AT_C_FY2023_24 = {
     "year": "FY2023-24",
     "brpl_pct": 6.58,
-    "bypl_pct": None,
+    "bypl_pct": 7.84,
     "tpddl_pct": 5.91,
     "note": (
-        "BYPL's figure is not stated in the source article and is not reported here rather "
-        "than guessed; two conflicting unverified numbers (6.9% and 7.25%) turned up in search "
-        "snippets from other articles but were not confirmed by reading either source directly."
+        "All three figures read directly from the primary PFC PDF's AT&C Losses table "
+        "(Annexure 1.8, PDF p.102 / printed p.76): BRPL and TPDDL exactly match the earlier "
+        "secondary-source (Power Line) figures; BYPL's 7.84% is now confirmed from the "
+        "primary source for the first time (the secondary article never stated it)."
     ),
     "source": (
-        "PFC, 'Report on Performance of State Power Utilities 2023-24', via Power Line "
-        "(powerline.net.in, 8 Jul 2025), 'Widening Losses: Key highlights of PFC's report on "
-        "discom performance' — the primary PFC PDF was not independently fetched (TLS cert error)"
+        "PFC, 'Report on Performance of Power Utilities 2023-24' (primary PDF, published Oct "
+        "2025), Section 1 Annexure 1.8 'AT&C Losses', 2023-24 columns, PDF p.102 / printed p.76 "
+        "-- cms.pfcindia.co.in/media/documents/Report%20on%20Perfromance%20of%20Power%20"
+        "Utilities%202023-24(1).pdf"
     ),
     "provenance": ProvenanceKind.REAL,
 }

@@ -256,7 +256,7 @@ def test_solar_includes_real_plant_validation_when_the_pipeline_has_run():
     assert validation["diagnostics"]["plant_2_dc_ac_ratio"] is not None
     assert isinstance(validation["diagnostics"]["plant_2_iqr_flagged_inverters"], list)
     assert "weak fit" in validation["note"]
-    assert "sensor placement" in validation["root_cause_note"]
+    assert "Sensor placement" in validation["root_cause_note"]
 
 
 @needs_15min
@@ -366,7 +366,7 @@ def test_losses_defaults_match_the_pf_correction_formula():
     assert body["discom_at_c_benchmark"]["provenance"] == "REAL"
     assert body["discom_at_c_benchmark"]["brpl_pct"] == pytest.approx(6.58)
     assert body["discom_at_c_benchmark"]["tpddl_pct"] == pytest.approx(5.91)
-    assert body["discom_at_c_benchmark"]["bypl_pct"] is None
+    assert body["discom_at_c_benchmark"]["bypl_pct"] == pytest.approx(7.84)
 
 
 def test_losses_current_drop_reduces_i2r_loss():

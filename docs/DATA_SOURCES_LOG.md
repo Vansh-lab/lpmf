@@ -194,23 +194,42 @@ Tata Power DDL documents:
 
 ## Losses & PF
 
-- **Searched:** PFC "Report on Performance of Power Utilities" (latest) for
-  real, DISCOM-specific (BRPL/BYPL/TPDDL) AT&C loss figures, to add
-  alongside the existing national FY2023 benchmark.
-- **Found:** PFC's "Report on Performance of State Power Utilities 2023-24"
-  — the primary PDF (pfcindia.co.in) could not be fetched (TLS certificate
-  chain error, not transient). Used a secondary source instead, read
-  directly (not a search snippet): Power Line, 8 Jul 2025, "Widening
-  Losses: Key highlights of PFC's report on discom performance"
-  (powerline.net.in), which quotes the report's figures verbatim for
-  **BRPL (6.58%) and TPDDL (5.91%), FY2023-24**. **BYPL is genuinely not
-  mentioned in that article** (confirmed by reading the full text, not a
-  snippet) — two conflicting, unverified figures (6.9%/7.25%) turned up in
-  other search snippets but were not confirmed by reading a source
-  directly, so BYPL is reported as unavailable (`None`) rather than
-  guessed.
-- **Outcome: REAL** (BRPL, TPDDL) via a secondary source quoting the
-  primary report; **BYPL: unavailable**, honestly reported as such. PF
-  formula inputs remain ILLUSTRATIVE (user what-ifs), unchanged.
-- Wired into `ml/src/lpmf/engines/losses.py`'s new `DISCOM_AT_C_FY2023_24`,
+- **Searched (first pass):** PFC "Report on Performance of Power Utilities"
+  (latest) for real, DISCOM-specific (BRPL/BYPL/TPDDL) AT&C loss figures,
+  to add alongside the existing national FY2023 benchmark.
+- **First-pass outcome:** the primary PDF (pfcindia.co.in) could not be
+  fetched by the fetch tool used at the time (TLS certificate chain
+  error). Used a secondary source instead, read directly (not a search
+  snippet): Power Line, 8 Jul 2025, "Widening Losses: Key highlights of
+  PFC's report on discom performance" (powerline.net.in), which quotes the
+  report's figures verbatim for **BRPL (6.58%) and TPDDL (5.91%),
+  FY2023-24**. BYPL was genuinely not mentioned in that article (confirmed
+  by reading the full text, not a snippet) — two conflicting, unverified
+  figures (6.9%/7.25%) turned up in other search snippets but were not
+  confirmed by reading a source directly, so BYPL was reported as
+  unavailable (`None`) rather than guessed.
+- **Re-investigated (2026-11-11):** per this round's instruction to find
+  the primary PDF directly and re-confirm BRPL/TPDDL from it too. The TLS
+  error turned out to be specific to the one fetch tool tried first —
+  plain `curl` reached `pfcindia.co.in` with `HTTP 200`, and PFC's
+  performance-report page (`pfcindia.co.in/en/pages/operations/`
+  `performance-report-of-power-utilities`) is a JS single-page app whose
+  document links only render client-side, so the primary PDF's direct URL
+  was found by loading the page in the built-in browser. Downloaded and
+  read directly (`pymupdf`, not just metadata) the primary PDF: PFC,
+  **"Report on Performance of Power Utilities 2023-24"** (published Oct
+  2025), from
+  `cms.pfcindia.co.in/media/documents/Report%20on%20Perfromance%20of%20Power%20Utilities%202023-24(1).pdf`.
+  Its **Section 1, Annexure 1.8 "AT&C Losses" table (2023-24 columns, PDF
+  page 102 / printed page 76)**, Delhi state-sector rows, gives:
+  **BRPL 6.58%, BYPL 7.84%, TPDDL 5.91%**. BRPL and TPDDL exactly match
+  the earlier secondary-source figures (re-confirmed from the primary
+  source as requested); **BYPL's figure is now confirmed for the first
+  time, directly from the primary report, not guessed.**
+- **Outcome: REAL**, all three DISCOMs (BRPL, BYPL, TPDDL), now sourced
+  directly from the primary PFC PDF rather than a secondary summary. PF
+  formula inputs remain ILLUSTRATIVE (user what-ifs), unchanged. DERC's
+  tariff/ARR orders were not needed as a fallback since the primary PFC
+  PDF was found directly.
+- Wired into `ml/src/lpmf/engines/losses.py`'s `DISCOM_AT_C_FY2023_24`,
   the API response, and the page.

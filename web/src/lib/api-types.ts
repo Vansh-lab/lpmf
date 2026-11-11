@@ -286,7 +286,7 @@ export interface components {
       brpl_pct: number;
       /**
        * Bypl Pct
-       * @description None: genuinely not stated in the source.
+       * @description Confirmed from the primary PFC PDF (2026-11-11); None only if a future year's source genuinely omits it.
        */
       bypl_pct: number | null;
       /** Tpddl Pct */

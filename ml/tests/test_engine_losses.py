@@ -104,12 +104,11 @@ def test_at_c_benchmark_is_tagged_foreign_not_delhi_specific():
     assert AT_C_BENCHMARK["at_c_loss_pct"] == pytest.approx(15.37)
 
 
-def test_discom_at_c_has_real_brpl_and_tpddl_figures_bypl_unconfirmed():
-    # PFC "Report on Performance of State Power Utilities 2023-24", via a
-    # secondary source whose BRPL/TPDDL figures were read directly (not a
-    # search snippet); BYPL is genuinely absent from that source, so it must
-    # be None rather than a guessed/unconfirmed number.
+def test_discom_at_c_has_real_brpl_bypl_and_tpddl_figures_from_primary_pfc_pdf():
+    # PFC "Report on Performance of Power Utilities 2023-24" primary PDF,
+    # Annexure 1.8 "AT&C Losses" (2023-24 columns), PDF p.102 / printed
+    # p.76 -- all three DISCOM figures read directly from that table.
     assert DISCOM_AT_C_FY2023_24["provenance"] == ProvenanceKind.REAL
     assert DISCOM_AT_C_FY2023_24["brpl_pct"] == pytest.approx(6.58)
     assert DISCOM_AT_C_FY2023_24["tpddl_pct"] == pytest.approx(5.91)
-    assert DISCOM_AT_C_FY2023_24["bypl_pct"] is None
+    assert DISCOM_AT_C_FY2023_24["bypl_pct"] == pytest.approx(7.84)
