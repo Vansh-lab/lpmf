@@ -1,6 +1,9 @@
-"""iex_price.illustrative_hourly_price_per_mwh, iex_price.purchase_cost."""
+"""iex_price.illustrative_hourly_price_per_mwh, iex_price.purchase_cost,
+iex_price.load_real_price_profile."""
 
 from __future__ import annotations
+
+import json
 
 import pytest
 
@@ -8,6 +11,7 @@ from lpmf.engines.iex_price import (
     EAC_PM_PRICE_RANGE,
     HOURS_PER_DAY,
     illustrative_hourly_price_per_mwh,
+    load_real_price_profile,
     purchase_cost,
 )
 from lpmf.provenance import ProvenanceKind
@@ -61,3 +65,25 @@ def test_eac_pm_price_range_is_tagged_foreign_and_matches_the_report():
     assert EAC_PM_PRICE_RANGE["provenance"] == ProvenanceKind.FOREIGN
     assert EAC_PM_PRICE_RANGE["midday_price_per_unit"] == pytest.approx(1.11)
     assert EAC_PM_PRICE_RANGE["night_price_per_unit"] == pytest.approx(9.71)
+
+
+def test_load_real_price_profile_returns_none_when_artifacts_are_missing(tmp_path):
+    assert load_real_price_profile(tmp_path / "does-not-exist") is None
+
+
+def test_load_real_price_profile_loads_and_shapes_the_real_artifact(tmp_path):
+    data = {
+        "block_profile_per_mwh": [3000.0] * 96,
+        "hourly_profile_per_mwh": [3000.0] * 24,
+        "n_days_averaged": 2435,
+        "date_range": ["2018-01-01 00:00:00", "2024-08-31 23:45:00"],
+        "source": "Kaggle mukund604/indian-energy-exchange-time-series-forecasting",
+    }
+    (tmp_path / "price_profile.json").write_text(json.dumps(data))
+
+    out = load_real_price_profile(tmp_path)
+
+    assert out["provenance"] == ProvenanceKind.REAL
+    assert out["n_days_averaged"] == 2435
+    assert len(out["hourly_profile_per_mwh"]) == 24
+    assert "typical-day" in out["note"]

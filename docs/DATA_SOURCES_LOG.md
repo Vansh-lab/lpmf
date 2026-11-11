@@ -40,8 +40,25 @@ exists. Every entry below names what was searched, where, and the outcome.
     independently documented by the uploader; plan is to validate it after
     download by spot-checking its price range/pattern against the live
     IEX snapshot before trusting it fully.
-- **Status: blocked** — same Kaggle token issue as Solar. Will resume once
-  confirmed.
+- **Resolved (2026-11-11):** Kaggle token was in a newer format
+  (`~/.kaggle/access_token`, not `kaggle.json`) that the installed `kaggle`
+  package (2.2.5) already supports — confirmed with a small metadata-only
+  test download before downloading the full dataset.
+- **Downloaded:** `DAM.xlsx`, 233,760 rows, 15-min resolution, 2018-01-01
+  to 2024-08-31 (2,435 days). Validated: fully continuous (no missing
+  blocks, no duplicate timestamps), plausible price range (Rs 0.30-20.00/
+  unit, mean 4.23), and the expected evening-peak/midday-trough shape
+  (hour 19 mean > 20% above hour 13's) — consistent with IEX's real
+  behavior, despite the uploader's own Kaggle metadata leaving provenance
+  fields empty.
+- **Outcome: REAL.** Built a block-of-day (96-value) historical average
+  price profile (`lpmf.iex.pipeline`) and wired it into the IEX Price
+  page/engine/API in place of the old illustrative cosine curve. Tagged
+  REAL with an honest caveat: it's the historical *typical-day* average,
+  not that specific day's actual real-time price. The EAC-PM FOREIGN
+  benchmark stays alongside it unchanged. Old illustrative-mode code path
+  (`illustrative_hourly_price_per_mwh`) kept as a fallback for when the
+  pipeline hasn't been run (artifacts are gitignored).
 
 ## Solar & Net Load
 

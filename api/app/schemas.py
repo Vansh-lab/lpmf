@@ -247,6 +247,14 @@ class IexBlock(BaseModel):
     is_expensive: bool = Field(description="Price in the top quartile of this day's curve.")
 
 
+class RealPriceProfileInfo(BaseModel):
+    n_days_averaged: int
+    date_range: list[str]
+    note: str
+    provenance: ProvenanceKind
+    source: str
+
+
 class IexPriceResponse(Tagged):
     date: date
     issued_at: datetime
@@ -255,9 +263,14 @@ class IexPriceResponse(Tagged):
     expensive_hour: int
     blocks: list[IexBlock]
     total_cost_rupees: float
-    is_illustrative: Literal[True]
-    manual_download_note: str
+    is_illustrative: bool
+    manual_download_note: str | None = None
     price_range_benchmark: IexPriceRange
+    real_price_profile: RealPriceProfileInfo | None = Field(
+        default=None,
+        description="Set when the real historical IEX DAM block-of-day profile was used "
+        "instead of the illustrative curve.",
+    )
 
 
 class SolarCapacityBenchmark(BaseModel):

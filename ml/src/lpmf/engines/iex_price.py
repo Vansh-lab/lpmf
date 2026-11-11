@@ -20,12 +20,47 @@ Ref: IEX DAM/RTM market data (not fetched here); EAC-PM WP 53/2026.
 
 from __future__ import annotations
 
+import json
+from pathlib import Path
+
 import numpy as np
 
 from lpmf.provenance import ProvenanceKind
 
 BLOCKS_PER_HOUR = 4
 HOURS_PER_DAY = 24
+
+IEX_ARTIFACTS_DIR = Path("models/artifacts/iex")
+
+
+def load_real_price_profile(artifacts_dir: Path = IEX_ARTIFACTS_DIR) -> dict | None:
+    """The real IEX DAM block-of-day price profile built by
+    `lpmf.iex.pipeline` from the real historical dataset (2018-2024), or
+    None if that pipeline hasn't been run. This is the actual historical
+    average for each block-of-day -- a real, typical-day curve, not a
+    forecast for any specific future day and not an illustration.
+
+    `artifacts_dir` defaults to a path relative to the process's cwd (the
+    repo root) -- callers with a different cwd (e.g. the API, started from
+    `api/`) must pass the resolved path explicitly.
+    """
+    path = artifacts_dir / "price_profile.json"
+    if not path.exists():
+        return None
+    data = json.loads(path.read_text())
+    return {
+        "block_profile_per_mwh": data["block_profile_per_mwh"],
+        "hourly_profile_per_mwh": data["hourly_profile_per_mwh"],
+        "n_days_averaged": data["n_days_averaged"],
+        "date_range": data["date_range"],
+        "provenance": ProvenanceKind.REAL,
+        "note": (
+            "The historical block-of-day average IEX DAM price (2018-2024) -- a real, "
+            "typical-day curve, not that specific day's actual real-time price."
+        ),
+        "source": data["source"],
+    }
+
 
 # S. Sanyal & S. Dev, "The Duck and the Camel: Tracing the Net Load on the
 # Indian Power Grid", EAC-PM Working Paper 53/2026: midday exchange prices

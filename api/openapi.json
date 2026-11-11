@@ -1329,15 +1329,32 @@
           },
           "is_illustrative": {
             "type": "boolean",
-            "const": true,
             "title": "Is Illustrative"
           },
           "manual_download_note": {
-            "type": "string",
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
             "title": "Manual Download Note"
           },
           "price_range_benchmark": {
             "$ref": "#/components/schemas/IexPriceRange"
+          },
+          "real_price_profile": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/RealPriceProfileInfo"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Set when the real historical IEX DAM block-of-day profile was used instead of the illustrative curve."
           }
         },
         "type": "object",
@@ -1352,7 +1369,6 @@
           "blocks",
           "total_cost_rupees",
           "is_illustrative",
-          "manual_download_note",
           "price_range_benchmark"
         ],
         "title": "IexPriceResponse"
@@ -1552,6 +1568,41 @@
         ],
         "title": "ProvenanceKind",
         "description": "The four provenance kinds. Values are the exact strings persisted to\ndisk (parquet columns, JSON, etc.) and sent over the wire to the web app\n— do not rename without updating both sides of the stack."
+      },
+      "RealPriceProfileInfo": {
+        "properties": {
+          "n_days_averaged": {
+            "type": "integer",
+            "title": "N Days Averaged"
+          },
+          "date_range": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Date Range"
+          },
+          "note": {
+            "type": "string",
+            "title": "Note"
+          },
+          "provenance": {
+            "$ref": "#/components/schemas/ProvenanceKind"
+          },
+          "source": {
+            "type": "string",
+            "title": "Source"
+          }
+        },
+        "type": "object",
+        "required": [
+          "n_days_averaged",
+          "date_range",
+          "note",
+          "provenance",
+          "source"
+        ],
+        "title": "RealPriceProfileInfo"
       },
       "ScatterPoint": {
         "properties": {

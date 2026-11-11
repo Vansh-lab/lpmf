@@ -437,14 +437,13 @@ export interface components {
       blocks: components["schemas"]["IexBlock"][];
       /** Total Cost Rupees */
       total_cost_rupees: number;
-      /**
-       * Is Illustrative
-       * @constant
-       */
-      is_illustrative: true;
+      /** Is Illustrative */
+      is_illustrative: boolean;
       /** Manual Download Note */
-      manual_download_note: string;
+      manual_download_note?: string | null;
       price_range_benchmark: components["schemas"]["IexPriceRange"];
+      /** @description Set when the real historical IEX DAM block-of-day profile was used instead of the illustrative curve. */
+      real_price_profile?: components["schemas"]["RealPriceProfileInfo"] | null;
     };
     /** LdcPoint */
     LdcPoint: {
@@ -540,6 +539,18 @@ export interface components {
      * @enum {string}
      */
     ProvenanceKind: "REAL" | "SYNTHETIC" | "FOREIGN" | "ILLUSTRATIVE" | "MODELLED";
+    /** RealPriceProfileInfo */
+    RealPriceProfileInfo: {
+      /** N Days Averaged */
+      n_days_averaged: number;
+      /** Date Range */
+      date_range: string[];
+      /** Note */
+      note: string;
+      provenance: components["schemas"]["ProvenanceKind"];
+      /** Source */
+      source: string;
+    };
     /** ScatterPoint */
     ScatterPoint: {
       /**

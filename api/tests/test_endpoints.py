@@ -262,13 +262,18 @@ def test_solar_unknown_day_and_bad_inputs():
 def test_iex_default_day_has_an_expensive_evening_block():
     body = _get("/iex")
     assert len(body["blocks"]) == 96
-    assert body["is_illustrative"] is True
     assert body["price_range_benchmark"]["provenance"] == "FOREIGN"
     assert any(b["is_expensive"] for b in body["blocks"])
     evening_block = next(b for b in body["blocks"] if b["ts_target"][11:13] == "20")
     morning_block = next(b for b in body["blocks"] if b["ts_target"][11:13] == "08")
     assert evening_block["price_per_mwh"] > morning_block["price_per_mwh"]
-    assert "download" in body["manual_download_note"].lower()
+    if body["is_illustrative"]:
+        assert "download" in body["manual_download_note"].lower()
+        assert body["real_price_profile"] is None
+    else:
+        assert body["provenance"] == "REAL"
+        assert body["real_price_profile"]["provenance"] == "REAL"
+        assert body["real_price_profile"]["n_days_averaged"] > 0
 
 
 @needs_bands

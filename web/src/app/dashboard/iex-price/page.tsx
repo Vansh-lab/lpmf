@@ -9,7 +9,7 @@ export default function IexPricePage() {
       equation={
         <EquationBlock
           latex="\text{cost} = \sum_{t} P_{load}(t)\cdot 0.25\,\text{h}\cdot \text{price}(t)"
-          caption="Power-purchase cost: 15-min load x price, summed over the day. IEX DAM/RTM market data (illustrative here — see the page note); EAC-PM WP 53/2026."
+          caption="Power-purchase cost: 15-min load x price, summed over the day. Price is the real historical IEX DAM block-of-day average (2018-2024) when built, else an illustrative curve bounded by EAC-PM WP 53/2026 — see the page note."
         />
       }
     >
