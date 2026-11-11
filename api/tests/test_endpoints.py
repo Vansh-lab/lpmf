@@ -223,6 +223,38 @@ def test_tod_bill_invalid_inputs_are_422(query):
     _get(f"/tod?{query}", 422)
 
 
+# --- solar ------------------------------------------------------------------
+
+
+@needs_15min
+@needs_bands
+def test_solar_default_day_has_96_blocks_with_a_daylight_peak():
+    body = _get("/solar")
+    assert len(body["blocks"]) == 96
+    assert body["provenance"] == "MODELLED"
+    assert body["capacity_benchmark"]["provenance"] == "FOREIGN"
+    night_block = body["blocks"][0]
+    assert night_block["solar_mw"] == 0.0  # 00:00 block: no sunlight
+    assert body["midday_solar_peak_mw"] > 0
+    assert body["peak_net_load_mw"] <= body["peak_load_mw"]
+
+
+@needs_15min
+@needs_bands
+def test_solar_zero_capacity_means_net_load_equals_load():
+    body = _get("/solar?capacity_mwp=0")
+    assert all(b["solar_mw"] == 0.0 for b in body["blocks"])
+    assert all(b["net_load_mw"] == b["load_mw"] for b in body["blocks"])
+
+
+@needs_15min
+@needs_bands
+def test_solar_unknown_day_and_bad_inputs():
+    _get("/solar?date=2024-01-01", 404)
+    _get("/solar?capacity_mwp=-1", 422)
+    _get("/solar?performance_ratio=0", 422)
+
+
 # --- losses ---------------------------------------------------------------------
 
 

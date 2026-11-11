@@ -16,6 +16,7 @@ export type DsmResponse = Schemas["DsmResponse"];
 export type TransformerResponse = Schemas["TransformerResponse"];
 export type LossesResponse = Schemas["LossesResponse"];
 export type TodBillResponse = Schemas["TodBillResponse"];
+export type SolarResponse = Schemas["SolarResponse"];
 
 type Query<P extends keyof paths> = paths[P] extends {
   get: { parameters: { query?: infer Q } };
@@ -94,4 +95,5 @@ export const api = {
   losses: (q: Query<"/losses">, signal?: AbortSignal) =>
     get<LossesResponse>("/losses", q, signal),
   tod: (q: Query<"/tod">, signal?: AbortSignal) => get<TodBillResponse>("/tod", q, signal),
+  solar: (q: Query<"/solar">, signal?: AbortSignal) => get<SolarResponse>("/solar", q, signal),
 };

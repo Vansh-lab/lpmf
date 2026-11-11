@@ -153,6 +153,38 @@ class TodRates(BaseModel):
     source: str
 
 
+class SolarCapacityBenchmark(BaseModel):
+    capacity_mwp: float
+    as_of: str
+    note: str
+    provenance: ProvenanceKind
+    source: str
+
+
+class SolarBlock(BaseModel):
+    block: int = Field(ge=1, le=96)
+    ts_target: datetime
+    load_mw: float
+    ghi_wm2: float
+    solar_mw: float
+    net_load_mw: float
+
+
+class SolarResponse(Tagged):
+    date: date
+    issued_at: datetime
+    capacity_mwp: float
+    performance_ratio: float
+    blocks: list[SolarBlock]
+    peak_load_mw: float
+    peak_net_load_mw: float
+    midday_solar_peak_mw: float
+    evening_ramp_mw: float = Field(
+        description="Net load rise from the midday solar trough to the evening peak."
+    )
+    capacity_benchmark: SolarCapacityBenchmark
+
+
 class TodBillResponse(Tagged):
     flat_bill_rupees: float
     tod_bill_rupees: float

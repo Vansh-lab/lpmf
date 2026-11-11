@@ -585,6 +585,83 @@
           }
         }
       }
+    },
+    "/solar": {
+      "get": {
+        "tags": [
+          "solar"
+        ],
+        "summary": "Solar",
+        "operationId": "solar_solar_get",
+        "parameters": [
+          {
+            "name": "date",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "format": "date"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Test-set day; default latest.",
+              "title": "Date"
+            },
+            "description": "Test-set day; default latest."
+          },
+          {
+            "name": "capacity_mwp",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "number",
+              "minimum": 0,
+              "description": "Rooftop fleet capacity, MWp.",
+              "default": 302.0,
+              "title": "Capacity Mwp"
+            },
+            "description": "Rooftop fleet capacity, MWp."
+          },
+          {
+            "name": "performance_ratio",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "number",
+              "maximum": 1,
+              "exclusiveMinimum": 0,
+              "default": 0.8,
+              "title": "Performance Ratio"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SolarResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
     }
   },
   "components": {
@@ -1137,6 +1214,151 @@
           "top_contributors"
         ],
         "title": "ShapSummary"
+      },
+      "SolarBlock": {
+        "properties": {
+          "block": {
+            "type": "integer",
+            "maximum": 96.0,
+            "minimum": 1.0,
+            "title": "Block"
+          },
+          "ts_target": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Ts Target"
+          },
+          "load_mw": {
+            "type": "number",
+            "title": "Load Mw"
+          },
+          "ghi_wm2": {
+            "type": "number",
+            "title": "Ghi Wm2"
+          },
+          "solar_mw": {
+            "type": "number",
+            "title": "Solar Mw"
+          },
+          "net_load_mw": {
+            "type": "number",
+            "title": "Net Load Mw"
+          }
+        },
+        "type": "object",
+        "required": [
+          "block",
+          "ts_target",
+          "load_mw",
+          "ghi_wm2",
+          "solar_mw",
+          "net_load_mw"
+        ],
+        "title": "SolarBlock"
+      },
+      "SolarCapacityBenchmark": {
+        "properties": {
+          "capacity_mwp": {
+            "type": "number",
+            "title": "Capacity Mwp"
+          },
+          "as_of": {
+            "type": "string",
+            "title": "As Of"
+          },
+          "note": {
+            "type": "string",
+            "title": "Note"
+          },
+          "provenance": {
+            "$ref": "#/components/schemas/ProvenanceKind"
+          },
+          "source": {
+            "type": "string",
+            "title": "Source"
+          }
+        },
+        "type": "object",
+        "required": [
+          "capacity_mwp",
+          "as_of",
+          "note",
+          "provenance",
+          "source"
+        ],
+        "title": "SolarCapacityBenchmark"
+      },
+      "SolarResponse": {
+        "properties": {
+          "provenance": {
+            "$ref": "#/components/schemas/ProvenanceKind"
+          },
+          "source": {
+            "type": "string",
+            "title": "Source"
+          },
+          "date": {
+            "type": "string",
+            "format": "date",
+            "title": "Date"
+          },
+          "issued_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Issued At"
+          },
+          "capacity_mwp": {
+            "type": "number",
+            "title": "Capacity Mwp"
+          },
+          "performance_ratio": {
+            "type": "number",
+            "title": "Performance Ratio"
+          },
+          "blocks": {
+            "items": {
+              "$ref": "#/components/schemas/SolarBlock"
+            },
+            "type": "array",
+            "title": "Blocks"
+          },
+          "peak_load_mw": {
+            "type": "number",
+            "title": "Peak Load Mw"
+          },
+          "peak_net_load_mw": {
+            "type": "number",
+            "title": "Peak Net Load Mw"
+          },
+          "midday_solar_peak_mw": {
+            "type": "number",
+            "title": "Midday Solar Peak Mw"
+          },
+          "evening_ramp_mw": {
+            "type": "number",
+            "title": "Evening Ramp Mw",
+            "description": "Net load rise from the midday solar trough to the evening peak."
+          },
+          "capacity_benchmark": {
+            "$ref": "#/components/schemas/SolarCapacityBenchmark"
+          }
+        },
+        "type": "object",
+        "required": [
+          "provenance",
+          "source",
+          "date",
+          "issued_at",
+          "capacity_mwp",
+          "performance_ratio",
+          "blocks",
+          "peak_load_mw",
+          "peak_net_load_mw",
+          "midday_solar_peak_mw",
+          "evening_ramp_mw",
+          "capacity_benchmark"
+        ],
+        "title": "SolarResponse"
       },
       "TodBillResponse": {
         "properties": {

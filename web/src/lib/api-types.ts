@@ -174,6 +174,23 @@ export interface paths {
     patch?: never;
     trace?: never;
   };
+  "/solar": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    /** Solar */
+    get: operations["solar_solar_get"];
+    put?: never;
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
 }
 export type webhooks = Record<string, never>;
 export interface components {
@@ -416,6 +433,70 @@ export interface components {
       day_label: string;
       /** Top Contributors */
       top_contributors: components["schemas"]["ShapContributor"][];
+    };
+    /** SolarBlock */
+    SolarBlock: {
+      /** Block */
+      block: number;
+      /**
+       * Ts Target
+       * Format: date-time
+       */
+      ts_target: string;
+      /** Load Mw */
+      load_mw: number;
+      /** Ghi Wm2 */
+      ghi_wm2: number;
+      /** Solar Mw */
+      solar_mw: number;
+      /** Net Load Mw */
+      net_load_mw: number;
+    };
+    /** SolarCapacityBenchmark */
+    SolarCapacityBenchmark: {
+      /** Capacity Mwp */
+      capacity_mwp: number;
+      /** As Of */
+      as_of: string;
+      /** Note */
+      note: string;
+      provenance: components["schemas"]["ProvenanceKind"];
+      /** Source */
+      source: string;
+    };
+    /** SolarResponse */
+    SolarResponse: {
+      provenance: components["schemas"]["ProvenanceKind"];
+      /** Source */
+      source: string;
+      /**
+       * Date
+       * Format: date
+       */
+      date: string;
+      /**
+       * Issued At
+       * Format: date-time
+       */
+      issued_at: string;
+      /** Capacity Mwp */
+      capacity_mwp: number;
+      /** Performance Ratio */
+      performance_ratio: number;
+      /** Blocks */
+      blocks: components["schemas"]["SolarBlock"][];
+      /** Peak Load Mw */
+      peak_load_mw: number;
+      /** Peak Net Load Mw */
+      peak_net_load_mw: number;
+      /** Midday Solar Peak Mw */
+      midday_solar_peak_mw: number;
+      /**
+       * Evening Ramp Mw
+       * @description Net load rise from the midday solar trough to the evening peak.
+       */
+      evening_ramp_mw: number;
+      capacity_benchmark: components["schemas"]["SolarCapacityBenchmark"];
     };
     /** TodBillResponse */
     TodBillResponse: {
@@ -830,6 +911,41 @@ export interface operations {
         };
         content: {
           "application/json": components["schemas"]["TodBillResponse"];
+        };
+      };
+      /** @description Validation Error */
+      422: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["HTTPValidationError"];
+        };
+      };
+    };
+  };
+  solar_solar_get: {
+    parameters: {
+      query?: {
+        /** @description Test-set day; default latest. */
+        date?: string | null;
+        /** @description Rooftop fleet capacity, MWp. */
+        capacity_mwp?: number;
+        performance_ratio?: number;
+      };
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      /** @description Successful Response */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["SolarResponse"];
         };
       };
       /** @description Validation Error */
