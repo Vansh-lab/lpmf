@@ -718,6 +718,8 @@ export interface components {
       provenance: components["schemas"]["ProvenanceKind"];
       /** Note */
       note: string;
+      /** Root Cause Note */
+      root_cause_note: string;
       diagnostics: components["schemas"]["SolarPlantDiagnostics"];
       /** Source */
       source: string;

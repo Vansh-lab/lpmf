@@ -255,6 +255,8 @@ def test_solar_includes_real_plant_validation_when_the_pipeline_has_run():
     assert validation["diagnostics"]["plant_1_dc_ac_ratio"] is not None
     assert validation["diagnostics"]["plant_2_dc_ac_ratio"] is not None
     assert isinstance(validation["diagnostics"]["plant_2_iqr_flagged_inverters"], list)
+    assert "weak fit" in validation["note"]
+    assert "sensor placement" in validation["root_cause_note"]
 
 
 @needs_15min

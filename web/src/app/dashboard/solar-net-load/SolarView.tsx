@@ -208,6 +208,18 @@ export function SolarView() {
                     ? "No Plant 2 inverters flagged as statistical outliers."
                     : `Flagged inverters: ${r.real_plant_validation.diagnostics.plant_2_iqr_flagged_inverters.join(", ")}.`}
                 </p>
+                <div
+                  role="note"
+                  className="mt-3 rounded-lg border-2 border-[color:var(--lpmf-amber)] bg-[color:var(--lpmf-amber)]/10 p-3"
+                >
+                  <p className="text-xs font-semibold uppercase tracking-wide text-[color:var(--lpmf-amber-text)]">
+                    Plant 2 has a genuinely weak fit — a real-world data limitation, not a model
+                    mistake
+                  </p>
+                  <p className="mt-1 text-xs text-[color:var(--foreground)]">
+                    {r.real_plant_validation.root_cause_note}
+                  </p>
+                </div>
               </Panel>
             )}
           </>

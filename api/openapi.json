@@ -2023,6 +2023,10 @@
             "type": "string",
             "title": "Note"
           },
+          "root_cause_note": {
+            "type": "string",
+            "title": "Root Cause Note"
+          },
           "diagnostics": {
             "$ref": "#/components/schemas/SolarPlantDiagnostics"
           },
@@ -2037,6 +2041,7 @@
           "plant_2",
           "provenance",
           "note",
+          "root_cause_note",
           "diagnostics",
           "source"
         ],

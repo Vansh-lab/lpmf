@@ -318,6 +318,7 @@ class SolarRealPlantValidation(BaseModel):
     plant_2: SolarPlantValidation
     provenance: ProvenanceKind
     note: str
+    root_cause_note: str
     diagnostics: SolarPlantDiagnostics
     source: str
 

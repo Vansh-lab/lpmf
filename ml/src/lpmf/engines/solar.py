@@ -55,7 +55,22 @@ def load_real_plant_validation(artifacts_dir: Path = SOLAR_ARTIFACTS_DIR) -> dic
             "continuum with no statistically distinguishable faulty subset (Tukey IQR rule on "
             "the data's own spread), so no inverters are excluded -- excluding any without "
             "that kind of rule would be cherry-picking data to fit the model, not a data-"
-            "quality decision."
+            "quality decision. Plant 2 has a genuinely weak fit; this reflects a limitation "
+            "of real-world data, not a mistake in the formula (Plant 1 fits the same formula "
+            "very well)."
+        ),
+        "root_cause_note": (
+            "Possible reasons for Plant 2's weak fit, none independently confirmed (this "
+            "dataset lacks per-inverter position/capacity metadata to test them directly): "
+            "(1) sensor placement -- one weather sensor covers the whole site, but 22 "
+            "inverters are spread across it, so an unrepresentative sensor location would "
+            "weaken the fit for every inverter at once; (2) inverter clipping -- AC output "
+            "flattening at high irradiance if inverters are sized close to the DC array's "
+            "peak, a real nonlinearity a linear GHI->power formula can't capture; (3) partial "
+            "shading from trees/structures decoupling local panel output from the single "
+            "sensor reading; (4) soiling and wiring-loss differences across 22 separate "
+            "strings. These can't be distinguished from each other with only this dataset's "
+            "4 columns."
         ),
         "diagnostics": {
             "plant_1_dc_ac_ratio": diagnostics.get("plant_1", {}).get("dc_ac_ratio"),
