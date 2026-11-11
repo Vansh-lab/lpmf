@@ -22,6 +22,7 @@ dependencies = [
   "optuna>=4.0",
   "mapie>=1.6",
   "shap>=0.54",
+  "scikit-learn>=1.5",
 ]
 
 [project.optional-dependencies]

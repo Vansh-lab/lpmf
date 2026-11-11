@@ -286,6 +286,34 @@ def test_iex_unknown_day_and_bad_inputs():
     _get("/iex?expensive_hour=24", 422)
 
 
+# --- theft & segments -----------------------------------------------------------
+
+
+def test_theft_default_fleet_is_synthetic_and_internally_consistent():
+    body = _get("/theft")
+    assert body["is_synthetic"] is True
+    assert body["provenance"] == "SYNTHETIC"
+    assert len(body["ranking"]) == body["n_meters"] == 60
+    assert body["n_theft_ground_truth"] == 6 and body["k"] == 6
+    assert sum(c["n_meters"] for c in body["clusters"]) == body["n_meters"]
+    scores = [r["anomaly_score"] for r in body["ranking"]]
+    assert scores == sorted(scores)
+
+
+def test_theft_response_is_deterministic_for_the_same_fleet_size():
+    a = _get("/theft?n_meters=30&n_theft=4")
+    b = _get("/theft?n_meters=30&n_theft=4")
+    assert [r["meter_id"] for r in a["ranking"]] == [r["meter_id"] for r in b["ranking"]]
+
+
+@pytest.mark.parametrize(
+    "query",
+    ["n_theft=100&n_meters=20", "n_clusters=50&n_meters=20", "contamination=0", "n_meters=2"],
+)
+def test_theft_invalid_inputs_are_422(query):
+    _get(f"/theft?{query}", 422)
+
+
 # --- losses ---------------------------------------------------------------------
 
 

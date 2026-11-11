@@ -153,6 +153,32 @@ class TodRates(BaseModel):
     source: str
 
 
+class SuspiciousMeter(BaseModel):
+    meter_id: str
+    category: str
+    anomaly_score: float
+    is_theft_ground_truth: bool = Field(
+        description="Only meaningful on this synthetic demo fleet, never a real theft finding."
+    )
+
+
+class MeterCluster(BaseModel):
+    cluster: int
+    n_meters: int
+    mean_shape_pct: list[float] = Field(description="Mean normalised 24h shape, % of daily energy.")
+    meter_ids: list[str]
+
+
+class TheftSegmentsResponse(Tagged):
+    n_meters: int
+    n_theft_ground_truth: int
+    precision_at_k: float
+    k: int
+    ranking: list[SuspiciousMeter]
+    clusters: list[MeterCluster]
+    is_synthetic: Literal[True]
+
+
 class IexPriceRange(BaseModel):
     midday_price_per_unit: float
     night_price_per_unit: float

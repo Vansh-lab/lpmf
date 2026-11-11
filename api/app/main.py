@@ -24,6 +24,7 @@ from app.routers import (
     losses,
     overview,
     solar,
+    theft_segments,
     tod_bill,
     transformer,
     weather,
@@ -78,3 +79,4 @@ app.include_router(losses.router, prefix="/losses", tags=["losses"])
 app.include_router(tod_bill.router, prefix="/tod", tags=["tod"])
 app.include_router(solar.router, prefix="/solar", tags=["solar"])
 app.include_router(iex_price.router, prefix="/iex", tags=["iex"])
+app.include_router(theft_segments.router, prefix="/theft", tags=["theft"])

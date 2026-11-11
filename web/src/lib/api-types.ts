@@ -208,6 +208,23 @@ export interface paths {
     patch?: never;
     trace?: never;
   };
+  "/theft": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    /** Theft Segments */
+    get: operations["theft_segments_theft_get"];
+    put?: never;
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
 }
 export type webhooks = Record<string, never>;
 export interface components {
@@ -448,6 +465,20 @@ export interface components {
       is_illustrative: true;
       at_c_benchmark: components["schemas"]["AtcBenchmark"];
     };
+    /** MeterCluster */
+    MeterCluster: {
+      /** Cluster */
+      cluster: number;
+      /** N Meters */
+      n_meters: number;
+      /**
+       * Mean Shape Pct
+       * @description Mean normalised 24h shape, % of daily energy.
+       */
+      mean_shape_pct: number[];
+      /** Meter Ids */
+      meter_ids: string[];
+    };
     /** OverviewResponse */
     OverviewResponse: {
       provenance: components["schemas"]["ProvenanceKind"];
@@ -583,6 +614,43 @@ export interface components {
        */
       evening_ramp_mw: number;
       capacity_benchmark: components["schemas"]["SolarCapacityBenchmark"];
+    };
+    /** SuspiciousMeter */
+    SuspiciousMeter: {
+      /** Meter Id */
+      meter_id: string;
+      /** Category */
+      category: string;
+      /** Anomaly Score */
+      anomaly_score: number;
+      /**
+       * Is Theft Ground Truth
+       * @description Only meaningful on this synthetic demo fleet, never a real theft finding.
+       */
+      is_theft_ground_truth: boolean;
+    };
+    /** TheftSegmentsResponse */
+    TheftSegmentsResponse: {
+      provenance: components["schemas"]["ProvenanceKind"];
+      /** Source */
+      source: string;
+      /** N Meters */
+      n_meters: number;
+      /** N Theft Ground Truth */
+      n_theft_ground_truth: number;
+      /** Precision At K */
+      precision_at_k: number;
+      /** K */
+      k: number;
+      /** Ranking */
+      ranking: components["schemas"]["SuspiciousMeter"][];
+      /** Clusters */
+      clusters: components["schemas"]["MeterCluster"][];
+      /**
+       * Is Synthetic
+       * @constant
+       */
+      is_synthetic: true;
     };
     /** TodBillResponse */
     TodBillResponse: {
@@ -1067,6 +1135,40 @@ export interface operations {
         };
         content: {
           "application/json": components["schemas"]["IexPriceResponse"];
+        };
+      };
+      /** @description Validation Error */
+      422: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["HTTPValidationError"];
+        };
+      };
+    };
+  };
+  theft_segments_theft_get: {
+    parameters: {
+      query?: {
+        n_meters?: number;
+        n_theft?: number;
+        n_clusters?: number;
+        contamination?: number;
+      };
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      /** @description Successful Response */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["TheftSegmentsResponse"];
         };
       };
       /** @description Validation Error */

@@ -748,6 +748,87 @@
           }
         }
       }
+    },
+    "/theft": {
+      "get": {
+        "tags": [
+          "theft"
+        ],
+        "summary": "Theft Segments",
+        "operationId": "theft_segments_theft_get",
+        "parameters": [
+          {
+            "name": "n_meters",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "maximum": 500,
+              "minimum": 5,
+              "default": 60,
+              "title": "N Meters"
+            }
+          },
+          {
+            "name": "n_theft",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "maximum": 50,
+              "minimum": 0,
+              "default": 6,
+              "title": "N Theft"
+            }
+          },
+          {
+            "name": "n_clusters",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "maximum": 10,
+              "minimum": 1,
+              "default": 3,
+              "title": "N Clusters"
+            }
+          },
+          {
+            "name": "contamination",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "number",
+              "exclusiveMaximum": 0.5,
+              "exclusiveMinimum": 0,
+              "default": 0.1,
+              "title": "Contamination"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TheftSegmentsResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
     }
   },
   "components": {
@@ -1312,6 +1393,41 @@
         ],
         "title": "LossesResponse"
       },
+      "MeterCluster": {
+        "properties": {
+          "cluster": {
+            "type": "integer",
+            "title": "Cluster"
+          },
+          "n_meters": {
+            "type": "integer",
+            "title": "N Meters"
+          },
+          "mean_shape_pct": {
+            "items": {
+              "type": "number"
+            },
+            "type": "array",
+            "title": "Mean Shape Pct",
+            "description": "Mean normalised 24h shape, % of daily energy."
+          },
+          "meter_ids": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Meter Ids"
+          }
+        },
+        "type": "object",
+        "required": [
+          "cluster",
+          "n_meters",
+          "mean_shape_pct",
+          "meter_ids"
+        ],
+        "title": "MeterCluster"
+      },
       "OverviewResponse": {
         "properties": {
           "provenance": {
@@ -1596,6 +1712,94 @@
           "capacity_benchmark"
         ],
         "title": "SolarResponse"
+      },
+      "SuspiciousMeter": {
+        "properties": {
+          "meter_id": {
+            "type": "string",
+            "title": "Meter Id"
+          },
+          "category": {
+            "type": "string",
+            "title": "Category"
+          },
+          "anomaly_score": {
+            "type": "number",
+            "title": "Anomaly Score"
+          },
+          "is_theft_ground_truth": {
+            "type": "boolean",
+            "title": "Is Theft Ground Truth",
+            "description": "Only meaningful on this synthetic demo fleet, never a real theft finding."
+          }
+        },
+        "type": "object",
+        "required": [
+          "meter_id",
+          "category",
+          "anomaly_score",
+          "is_theft_ground_truth"
+        ],
+        "title": "SuspiciousMeter"
+      },
+      "TheftSegmentsResponse": {
+        "properties": {
+          "provenance": {
+            "$ref": "#/components/schemas/ProvenanceKind"
+          },
+          "source": {
+            "type": "string",
+            "title": "Source"
+          },
+          "n_meters": {
+            "type": "integer",
+            "title": "N Meters"
+          },
+          "n_theft_ground_truth": {
+            "type": "integer",
+            "title": "N Theft Ground Truth"
+          },
+          "precision_at_k": {
+            "type": "number",
+            "title": "Precision At K"
+          },
+          "k": {
+            "type": "integer",
+            "title": "K"
+          },
+          "ranking": {
+            "items": {
+              "$ref": "#/components/schemas/SuspiciousMeter"
+            },
+            "type": "array",
+            "title": "Ranking"
+          },
+          "clusters": {
+            "items": {
+              "$ref": "#/components/schemas/MeterCluster"
+            },
+            "type": "array",
+            "title": "Clusters"
+          },
+          "is_synthetic": {
+            "type": "boolean",
+            "const": true,
+            "title": "Is Synthetic"
+          }
+        },
+        "type": "object",
+        "required": [
+          "provenance",
+          "source",
+          "n_meters",
+          "n_theft_ground_truth",
+          "precision_at_k",
+          "k",
+          "ranking",
+          "clusters",
+          "is_synthetic"
+        ],
+        "title": "TheftSegmentsResponse"
       },
       "TodBillResponse": {
         "properties": {
