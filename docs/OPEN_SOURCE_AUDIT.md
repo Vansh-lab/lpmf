@@ -195,3 +195,40 @@ licence isn't fully clear is flagged explicitly rather than glossed over.
 | 11b | Theft & Segments (SGCC) | No formal licence on the GitHub data release (citation-only norm); an author-citation error in the PPT was found and corrected this round |
 
 No other page carries an unresolved source or licence flag.
+
+## Leakage + sanity sweep (2026-11-11)
+
+Checked across all 12 pages:
+
+1. **Train-only cleaning statistics.** SGCC (11b): `clean.fit_cleaning()`
+   fits fill/cap values from the train split only (enforced in code and
+   tested in `test_sgcc_clean.py`). Main forecast model (01-04): uses a
+   different but equally correct discipline for a time series —
+   *temporal* causality (every cleaning/imputation decision depends only
+   on readings at or before it, never on the future), documented in
+   `ml/src/lpmf/clean/load_clean.py`'s own module docstring. No scaler is
+   fit anywhere in the main pipeline (tree models don't need one), so no
+   cross-split scaling leakage is possible there.
+2. **No test-set number used in a feature-design decision.** SGCC: Optuna
+   tuning and the F1-threshold choice are both against val only, test
+   scored exactly once (`ml/src/lpmf/sgcc/pipeline.py`, confirmed by
+   grepping every `["test"]` usage — all inside the final metrics-
+   computation block, none earlier). The conformal-band calibration
+   (Forecast page) is fit on val, evaluated on test, matching its own
+   documented protocol. The main forecast model carries one **pre-
+   existing, already-disclosed** caveat (`docs/MODEL_RESULTS.md`,
+   "Test set is no longer a fully untouched holdout" — the target-aligned
+   lag feature design was informed by test-period behaviour before this
+   project's own audit flagged it); nothing new found here, re-confirmed
+   still accurate. This round's own new work (Solar Plant 2 diagnosis,
+   SGCC improvement experiment) followed the same discipline throughout
+   — see their own sections above.
+3. **Provenance tags.** Cross-checked every router's `provenance=` value
+   against its engine's actual tag (`grep -n "provenance=" api/app/routers/*.py`
+   and each engine source): all 12 pages' top-level and nested provenance
+   tags match what's actually REAL/SYNTHETIC/ILLUSTRATIVE/MODELLED/FOREIGN
+   about their data. No mismatches found.
+4. **Citation error found and fixed.** The SGCC paper's authors were
+   misquoted on one PPT slide (`Zheng, Yang, Chen, Huang & Zhu` instead of
+   the real `Zheng, Yang, Niu, Dai, Zhou`, per the GitHub repo's own
+   README) — corrected in `docs/LPMF_Project_Presentation_v2.pptx`.
