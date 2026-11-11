@@ -6,16 +6,24 @@ consumer load profile.
                   = 1 - rebate      if h in off-peak hours
                   = 1               otherwise
 
-The surcharge/rebate percentages are REAL (DERC's own tariff order); the
-hour windows below are the commonly cited BRPL peak/off-peak slots, not
-independently re-verified against the live DERC order for every year. The
-24-hour load profile itself is always a user input or an illustrative
-shape, never a real metered consumer — so the bill this produces is
-ILLUSTRATIVE even though the rates are real.
+The surcharge/rebate percentages and hour windows below are REAL — read
+directly from the DERC tariff schedule PDF itself (not a secondary
+citation), clause 3(d), page 2. DERC's ToD slots only apply May-September
+(no ToD in the other 6 months) and only to non-Domestic consumers with
+sanctioned load/MDI >= 10kW/11kVA (optional for everyone else). This is a
+materially different structure than a flat, year-round schedule — captured
+honestly in the `note` field below. DERC has not issued a new base tariff
+order since 30.09.2021; later DERC orders (e.g. FY 2025-26) only adjust the
+fuel-cost (PPAC) surcharge on top of this schedule, not the ToD structure
+itself, so this remains the operative ToD schedule. The 24-hour load
+profile itself is always a user input or an illustrative shape, never a
+real metered consumer — so the bill this produces is ILLUSTRATIVE even
+though the rates are real.
 
 Ref: Electricity (Rights of Consumers) Amendment Rules, 2023 (mandates
-ToD metering/tariffs); DERC tariff order, FY 2025-26 (peak surcharge /
-off-peak rebate percentages).
+ToD metering/tariffs); DERC "Electricity Tariff Schedule for FY 2020-21 —
+BRPL, BYPL, TPDDL & NDMC", clause 3(d), page 2 (read directly from the PDF
+at tatapower-ddl.com/Editor_UploadedDocuments/Content/Tariff_Schedule_2020-21.pdf).
 """
 
 from __future__ import annotations
@@ -26,22 +34,27 @@ from lpmf.provenance import ProvenanceKind
 
 HOURS_PER_DAY = 24
 
-# DERC progressively raised the off-peak rebate (15% -> 20% -> 25%) and has
-# held a 30% peak surcharge; both held steady into the FY 2025-26 order.
-# Slot hours are the commonly cited BRPL peak/off-peak windows, not
-# re-verified against every year's order.
+# Read directly from the DERC tariff schedule PDF, clause 3(d), page 2:
+# "The Commission has decided to retain the Rebate during the Off Peak
+# hours and Peak hours Surcharge at 20%... retained the time slots for
+# Peak and Off-Peak hours as follows: MONTHS: May-September, PEAK HOURS:
+# 1400-1700 & 2200-0100, OFF-PEAK HOURS: 0400-1000." Applies jointly to
+# BRPL, BYPL and TPDDL. The 2200-0100 peak window wraps past midnight —
+# represented here as hours 22, 23, 0.
 DERC_TOD_RATES = {
-    "peak_surcharge_pct": 30.0,
-    "off_peak_rebate_pct": 25.0,
-    "order_year": "FY 2025-26",
-    "peak_hours": [17, 18, 19, 20, 21],  # 17:00-22:00
-    "off_peak_hours": [22, 23, 0, 1, 2, 3, 4, 5],  # 22:00-06:00
+    "peak_surcharge_pct": 20.0,
+    "off_peak_rebate_pct": 20.0,
+    "order_year": "FY 2020-21 (DERC's last base tariff order was 30.09.2021; "
+    "later orders adjust only the fuel-cost surcharge, not ToD structure)",
+    "peak_hours": [14, 15, 16, 22, 23, 0],  # 14:00-17:00 & 22:00-01:00
+    "off_peak_hours": [4, 5, 6, 7, 8, 9],  # 04:00-10:00
     "note": (
-        "Surcharge/rebate percentages are DERC's own figures for the FY 2025-26 tariff order; "
-        "the specific peak/off-peak hour windows are the commonly cited BRPL slots and were not "
-        "independently re-verified against that order."
+        "ToD applies only May-September (no ToD the other 6 months), and only to "
+        "non-Domestic consumers with sanctioned load/MDI >= 10kW/11kVA (optional for "
+        "everyone else). This simulator applies the rates year-round for illustration; "
+        "a real bill would not carry ToD outside that season/eligibility."
     ),
-    "source": "DERC tariff order, FY 2025-26",
+    "source": "DERC Tariff Schedule FY 2020-21 (BRPL, BYPL, TPDDL & NDMC), clause 3(d), page 2",
     "provenance": ProvenanceKind.REAL,
 }
 

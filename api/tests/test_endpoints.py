@@ -199,7 +199,7 @@ def test_tod_bill_default_profile_is_coherent():
     assert body["total_kwh"] == pytest.approx(10.0)
     assert body["is_illustrative"] is True
     assert body["rates"]["provenance"] == "REAL"
-    assert body["rates"]["peak_surcharge_pct"] == pytest.approx(30.0)
+    assert body["rates"]["peak_surcharge_pct"] == pytest.approx(20.0)
     # Shifting peak load to off-peak never costs more than not shifting.
     assert body["shifted_tod_bill_rupees"] <= body["tod_bill_rupees"] + 1e-9
     assert body["shifted_savings_rupees"] >= -1e-9

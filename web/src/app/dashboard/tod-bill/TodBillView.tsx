@@ -55,7 +55,7 @@ export function TodBillView() {
             step={0.05}
             value={peakFraction}
             onChange={setPeakFraction}
-            hint="Share of the day's kWh used 17:00–22:00."
+            hint="Share of the day's kWh used in DERC's peak hours (14:00–17:00 & 22:00–01:00)."
           />
           <SliderField
             label="Shift to off-peak"
@@ -65,7 +65,7 @@ export function TodBillView() {
             step={0.05}
             value={shiftFraction}
             onChange={setShiftFraction}
-            hint="Share of that peak energy moved to 22:00–06:00."
+            hint="Share of that peak energy moved to the off-peak window (04:00–10:00)."
           />
         </div>
       </Panel>
@@ -80,12 +80,12 @@ export function TodBillView() {
             >
               <div className="grid gap-4 md:grid-cols-2">
                 <KpiCard
-                  label="Peak surcharge (17:00–22:00)"
+                  label="Peak surcharge (14:00–17:00 & 22:00–01:00, May–Sep)"
                   value={`+${r.rates.peak_surcharge_pct}`}
                   unit="%"
                 />
                 <KpiCard
-                  label="Off-peak rebate (22:00–06:00)"
+                  label="Off-peak rebate (04:00–10:00, May–Sep)"
                   value={`-${r.rates.off_peak_rebate_pct}`}
                   unit="%"
                 />

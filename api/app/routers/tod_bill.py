@@ -38,7 +38,11 @@ def tod(
         float, Query(ge=0, allow_inf_nan=False, description="Illustrative household profile.")
     ] = 10.0,
     evening_peak_fraction: Annotated[
-        float, Fraction, Query(description="Share of the day's kWh used in the 17:00-22:00 peak.")
+        float,
+        Fraction,
+        Query(
+            description="Share of the day's kWh used in the DERC peak hours (14:00-17:00 & 22:00-01:00, May-Sep)."
+        ),
     ] = 0.4,
     shift_fraction: Annotated[
         float, Fraction, Query(description="Share of that peak energy shifted to off-peak hours.")
@@ -82,5 +86,5 @@ def tod(
         is_illustrative=True,
         rates=TodRates(**rates),
         provenance=before["provenance"],
-        source="Illustrative household profile; DERC FY 2025-26 ToD rates",
+        source="Illustrative household profile; DERC FY 2020-21 tariff schedule ToD rates (operative, no base order since)",
     )

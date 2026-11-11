@@ -541,11 +541,11 @@
               "type": "number",
               "maximum": 1,
               "minimum": 0,
-              "description": "Share of the day's kWh used in the 17:00-22:00 peak.",
+              "description": "Share of the day's kWh used in the DERC peak hours (14:00-17:00 & 22:00-01:00, May-Sep).",
               "default": 0.4,
               "title": "Evening Peak Fraction"
             },
-            "description": "Share of the day's kWh used in the 17:00-22:00 peak."
+            "description": "Share of the day's kWh used in the DERC peak hours (14:00-17:00 & 22:00-01:00, May-Sep)."
           },
           {
             "name": "shift_fraction",

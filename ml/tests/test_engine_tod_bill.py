@@ -42,9 +42,10 @@ def test_all_load_in_off_peak_hours_is_cheaper_under_tod():
 
 def test_derc_tod_rates_are_real_and_sourced():
     assert DERC_TOD_RATES["provenance"] == ProvenanceKind.REAL
-    assert DERC_TOD_RATES["peak_surcharge_pct"] == pytest.approx(30.0)
-    assert DERC_TOD_RATES["off_peak_rebate_pct"] == pytest.approx(25.0)
+    assert DERC_TOD_RATES["peak_surcharge_pct"] == pytest.approx(20.0)
+    assert DERC_TOD_RATES["off_peak_rebate_pct"] == pytest.approx(20.0)
     assert "DERC" in DERC_TOD_RATES["source"]
+    assert "clause 3(d)" in DERC_TOD_RATES["source"]
 
 
 @pytest.mark.parametrize(
