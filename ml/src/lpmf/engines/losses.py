@@ -6,8 +6,9 @@
 Ref: V.K. Mehta & R. Mehta, Principles of Power System, S. Chand, Ch. 6.
 
 Both are illustrative what-ifs on user-supplied P/PF/I/R; the AT&C loss
-benchmark alongside them on the page is the one REAL number (a national
-figure, not Delhi-specific — see losses.AT_C_BENCHMARK).
+benchmarks alongside them on the page are the REAL numbers — a national
+figure (AT_C_BENCHMARK) and, now, Delhi-DISCOM-specific figures for BRPL
+and TPDDL (DISCOM_AT_C_FY2023_24).
 """
 
 from __future__ import annotations
@@ -29,6 +30,30 @@ AT_C_BENCHMARK = {
     ),
     "source": "Rajya Sabha unstarred question 266, 27 Nov 2024",
     "provenance": ProvenanceKind.FOREIGN,
+}
+
+# DISCOM-specific AT&C loss %, FY2023-24, from PFC's "Report on Performance
+# of State Power Utilities 2023-24" — read via a secondary (trade-press)
+# summary, not the primary PFC PDF directly (pfcindia.co.in's TLS cert
+# could not be verified by our fetch tooling). BYPL is genuinely not stated
+# in the source article (confirmed by reading the full article text, not
+# just a search snippet) — reported as None rather than guessed.
+DISCOM_AT_C_FY2023_24 = {
+    "year": "FY2023-24",
+    "brpl_pct": 6.58,
+    "bypl_pct": None,
+    "tpddl_pct": 5.91,
+    "note": (
+        "BYPL's figure is not stated in the source article and is not reported here rather "
+        "than guessed; two conflicting unverified numbers (6.9% and 7.25%) turned up in search "
+        "snippets from other articles but were not confirmed by reading either source directly."
+    ),
+    "source": (
+        "PFC, 'Report on Performance of State Power Utilities 2023-24', via Power Line "
+        "(powerline.net.in, 8 Jul 2025), 'Widening Losses: Key highlights of PFC's report on "
+        "discom performance' — the primary PFC PDF was not independently fetched (TLS cert error)"
+    ),
+    "provenance": ProvenanceKind.REAL,
 }
 
 

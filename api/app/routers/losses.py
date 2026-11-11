@@ -12,13 +12,14 @@ from typing import Annotated
 from fastapi import APIRouter, HTTPException, Query
 from lpmf.engines.losses import (
     AT_C_BENCHMARK,
+    DISCOM_AT_C_FY2023_24,
     current_after_pf_correction,
     i2r_loss,
     loss_reduction_pct,
     pf_correction,
 )
 
-from app.schemas import AtcBenchmark, LossesResponse
+from app.schemas import AtcBenchmark, DiscomAtcBenchmark, LossesResponse
 
 router = APIRouter()
 
@@ -56,6 +57,7 @@ def losses(
         loss_reduction_pct=reduction,
         is_illustrative=True,
         at_c_benchmark=AtcBenchmark(**AT_C_BENCHMARK),
+        discom_at_c_benchmark=DiscomAtcBenchmark(**DISCOM_AT_C_FY2023_24),
         provenance=pf_out["provenance"],
         source="Illustrative PF-correction/I²R what-if (V.K. Mehta, Ch. 6)",
     )

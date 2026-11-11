@@ -25,7 +25,23 @@ exists. Every entry below names what was searched, where, and the outcome.
 - **Searched:** real IEX (Indian Energy Exchange) Day-Ahead Market price
   data — iexindia.com Market Snapshot/Area Price exports, Kaggle/Mendeley
   mirrors.
-- **Status: in progress** — see update below once research completes.
+- **Found:**
+  - iexindia.com's own Market Snapshot page: 15-min blocks from 1 Apr 2022,
+    but the "Export" button's Delivery Period selector appears to support
+    only single-day exports (no multi-day/range found), and no public
+    JSON/CSV API — not practically scriptable for a year of history
+    (~365 manual exports).
+  - energymap.in sells a commercial IEX historical dataset — paid, not
+    freely downloadable.
+  - **Best candidate: Kaggle `mukund604/indian-energy-exchange-time-series-forecasting`**
+    — `DAM.xlsx`, 233,760 rows x 7 cols, 2019-2024, MCP (Rs/MWh) target,
+    Apache 2.0 license. Caveat: the dataset's own provenance/citation
+    fields are empty on Kaggle — claims to be real IEX DAM data but isn't
+    independently documented by the uploader; plan is to validate it after
+    download by spot-checking its price range/pattern against the live
+    IEX snapshot before trusting it fully.
+- **Status: blocked** — same Kaggle token issue as Solar. Will resume once
+  confirmed.
 
 ## Solar & Net Load
 
@@ -63,5 +79,22 @@ exists. Every entry below names what was searched, where, and the outcome.
 ## Losses & PF
 
 - **Searched:** PFC "Report on Performance of Power Utilities" (latest) for
-  real, DISCOM-specific (BRPL/BYPL/TPDDL) AT&C loss figures.
-- **Status:** in progress — see update below once research completes.
+  real, DISCOM-specific (BRPL/BYPL/TPDDL) AT&C loss figures, to add
+  alongside the existing national FY2023 benchmark.
+- **Found:** PFC's "Report on Performance of State Power Utilities 2023-24"
+  — the primary PDF (pfcindia.co.in) could not be fetched (TLS certificate
+  chain error, not transient). Used a secondary source instead, read
+  directly (not a search snippet): Power Line, 8 Jul 2025, "Widening
+  Losses: Key highlights of PFC's report on discom performance"
+  (powerline.net.in), which quotes the report's figures verbatim for
+  **BRPL (6.58%) and TPDDL (5.91%), FY2023-24**. **BYPL is genuinely not
+  mentioned in that article** (confirmed by reading the full text, not a
+  snippet) — two conflicting, unverified figures (6.9%/7.25%) turned up in
+  other search snippets but were not confirmed by reading a source
+  directly, so BYPL is reported as unavailable (`None`) rather than
+  guessed.
+- **Outcome: REAL** (BRPL, TPDDL) via a secondary source quoting the
+  primary report; **BYPL: unavailable**, honestly reported as such. PF
+  formula inputs remain ILLUSTRATIVE (user what-ifs), unchanged.
+- Wired into `ml/src/lpmf/engines/losses.py`'s new `DISCOM_AT_C_FY2023_24`,
+  the API response, and the page.

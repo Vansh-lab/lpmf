@@ -335,6 +335,10 @@ def test_losses_defaults_match_the_pf_correction_formula():
     assert body["is_illustrative"] is True and body["provenance"] == "ILLUSTRATIVE"
     assert body["at_c_benchmark"]["provenance"] == "FOREIGN"
     assert body["at_c_benchmark"]["at_c_loss_pct"] == pytest.approx(15.37)
+    assert body["discom_at_c_benchmark"]["provenance"] == "REAL"
+    assert body["discom_at_c_benchmark"]["brpl_pct"] == pytest.approx(6.58)
+    assert body["discom_at_c_benchmark"]["tpddl_pct"] == pytest.approx(5.91)
+    assert body["discom_at_c_benchmark"]["bypl_pct"] is None
 
 
 def test_losses_current_drop_reduces_i2r_loss():

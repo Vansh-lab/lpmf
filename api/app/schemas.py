@@ -129,6 +129,16 @@ class AtcBenchmark(BaseModel):
     source: str
 
 
+class DiscomAtcBenchmark(BaseModel):
+    year: str
+    brpl_pct: float
+    bypl_pct: float | None = Field(description="None: genuinely not stated in the source.")
+    tpddl_pct: float
+    note: str
+    provenance: ProvenanceKind
+    source: str
+
+
 class LossesResponse(Tagged):
     active_power_kw: float
     pf1: float
@@ -140,6 +150,7 @@ class LossesResponse(Tagged):
     loss_reduction_pct: float
     is_illustrative: Literal[True]
     at_c_benchmark: AtcBenchmark
+    discom_at_c_benchmark: DiscomAtcBenchmark
 
 
 class TodRates(BaseModel):

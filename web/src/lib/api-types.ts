@@ -278,6 +278,25 @@ export interface components {
       /** Empirical Test Coverage */
       empirical_test_coverage: number;
     };
+    /** DiscomAtcBenchmark */
+    DiscomAtcBenchmark: {
+      /** Year */
+      year: string;
+      /** Brpl Pct */
+      brpl_pct: number;
+      /**
+       * Bypl Pct
+       * @description None: genuinely not stated in the source.
+       */
+      bypl_pct: number | null;
+      /** Tpddl Pct */
+      tpddl_pct: number;
+      /** Note */
+      note: string;
+      provenance: components["schemas"]["ProvenanceKind"];
+      /** Source */
+      source: string;
+    };
     /** DsmResponse */
     DsmResponse: {
       provenance: components["schemas"]["ProvenanceKind"];
@@ -464,6 +483,7 @@ export interface components {
        */
       is_illustrative: true;
       at_c_benchmark: components["schemas"]["AtcBenchmark"];
+      discom_at_c_benchmark: components["schemas"]["DiscomAtcBenchmark"];
     };
     /** MeterCluster */
     MeterCluster: {
@@ -1106,7 +1126,7 @@ export interface operations {
       query?: {
         /** @description Illustrative household profile. */
         total_daily_kwh?: number;
-        /** @description Share of the day's kWh used in the 17:00-22:00 peak. */
+        /** @description Share of the day's kWh used in the DERC peak hours (14:00-17:00 & 22:00-01:00, May-Sep). */
         evening_peak_fraction?: number;
         /** @description Share of that peak energy shifted to off-peak hours. */
         shift_fraction?: number;

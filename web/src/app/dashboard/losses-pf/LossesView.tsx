@@ -141,6 +141,34 @@ export function LossesView() {
                 <p className="text-sm text-[color:var(--lpmf-muted)]">{r.at_c_benchmark.note}</p>
               </div>
             </Panel>
+
+            <Panel
+              title="AT&C loss, Delhi DISCOMs"
+              provenance={r.discom_at_c_benchmark.provenance as ProvenanceKind}
+              source={r.discom_at_c_benchmark.source}
+            >
+              <div className="grid gap-4 md:grid-cols-3">
+                <KpiCard
+                  label={`BRPL, ${r.discom_at_c_benchmark.year}`}
+                  value={r.discom_at_c_benchmark.brpl_pct.toFixed(2)}
+                  unit="%"
+                />
+                <KpiCard
+                  label={`BYPL, ${r.discom_at_c_benchmark.year}`}
+                  value={r.discom_at_c_benchmark.bypl_pct == null ? "—" : r.discom_at_c_benchmark.bypl_pct.toFixed(2)}
+                  unit={r.discom_at_c_benchmark.bypl_pct == null ? "" : "%"}
+                  hint={r.discom_at_c_benchmark.bypl_pct == null ? "Not stated in the source — not guessed." : undefined}
+                />
+                <KpiCard
+                  label={`TPDDL, ${r.discom_at_c_benchmark.year}`}
+                  value={r.discom_at_c_benchmark.tpddl_pct.toFixed(2)}
+                  unit="%"
+                />
+              </div>
+              <p className="mt-3 text-xs text-[color:var(--lpmf-muted)]">
+                {r.discom_at_c_benchmark.note}
+              </p>
+            </Panel>
           </>
         )}
       </ApiBoundary>
