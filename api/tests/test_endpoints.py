@@ -180,9 +180,47 @@ def test_transformer_out_of_range_inputs_are_422(query):
 
 
 def test_every_page_response_carries_provenance():
-    for url in ("/dsm", "/transformer", "/losses"):
-        assert _get(url)["provenance"] in {"REAL", "SYNTHETIC", "FOREIGN", "ILLUSTRATIVE"}
+    for url in ("/dsm", "/transformer", "/losses", "/tod"):
+        assert _get(url)["provenance"] in {
+            "REAL",
+            "SYNTHETIC",
+            "FOREIGN",
+            "ILLUSTRATIVE",
+            "MODELLED",
+        }
     assert not math.isnan(_get("/dsm")["penalty_rupees"])
+
+
+# --- tod bill -------------------------------------------------------------------
+
+
+def test_tod_bill_default_profile_is_coherent():
+    body = _get("/tod")
+    assert body["total_kwh"] == pytest.approx(10.0)
+    assert body["is_illustrative"] is True
+    assert body["rates"]["provenance"] == "REAL"
+    assert body["rates"]["peak_surcharge_pct"] == pytest.approx(30.0)
+    # Shifting peak load to off-peak never costs more than not shifting.
+    assert body["shifted_tod_bill_rupees"] <= body["tod_bill_rupees"] + 1e-9
+    assert body["shifted_savings_rupees"] >= -1e-9
+
+
+def test_tod_bill_all_peak_costs_more_than_flat():
+    body = _get("/tod?evening_peak_fraction=1.0&shift_fraction=0")
+    assert body["savings_rupees"] < 0
+
+
+def test_tod_bill_shifting_everything_removes_all_peak_cost():
+    body = _get("/tod?evening_peak_fraction=1.0&shift_fraction=1.0")
+    assert body["shifted_savings_rupees"] > 0
+
+
+@pytest.mark.parametrize(
+    "query",
+    ["total_daily_kwh=-1", "evening_peak_fraction=1.5", "shift_fraction=-0.1"],
+)
+def test_tod_bill_invalid_inputs_are_422(query):
+    _get(f"/tod?{query}", 422)
 
 
 # --- losses ---------------------------------------------------------------------

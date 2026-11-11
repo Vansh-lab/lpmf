@@ -19,6 +19,7 @@ Defined once, shared by both halves of the stack:
 | `SYNTHETIC` | Generated/simulated data standing in for real data that doesn't (yet) exist — e.g. synthetic smart-meter profiles before rollout. |
 | `FOREIGN` | Real data, but not about Delhi — another DISCOM, another city, a benchmark/reference series. |
 | `ILLUSTRATIVE` | Not real and not meant to be read as a forecast — worked examples, mock UI states, placeholders. |
+| `MODELLED` | A published physical/engineering model applied to real, measured inputs, estimating something not itself directly metered — e.g. rooftop solar output from real Open-Meteo irradiance and a public capacity figure. Inputs are real; only the output is an estimate. |
 
 ## The rule
 
@@ -35,6 +36,7 @@ short human string naming where the number actually came from, e.g.:
 <SourceBadge kind="REAL" source="Open-Meteo Archive API" />
 <SourceBadge kind="SYNTHETIC" source="Synthetic smart-meter profile v1" />
 <SourceBadge kind="ILLUSTRATIVE" source="Worked example" />
+<SourceBadge kind="MODELLED" source="Open-Meteo GHI + MNRE capacity estimate" />
 ```
 
 ## Why this exists

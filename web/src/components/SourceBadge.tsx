@@ -41,6 +41,11 @@ const kindStyles: Record<ProvenanceKind, string> = {
     "border-[color:var(--lpmf-muted)]/30 bg-[color:var(--lpmf-muted)]/10 text-[color:var(--lpmf-muted)]",
   [ProvenanceKind.ILLUSTRATIVE]:
     "border-[color:var(--lpmf-muted)]/30 bg-transparent text-[color:var(--lpmf-muted)] italic",
+  // Shares the green family with REAL (its inputs are real) but a lighter
+  // tint, since the badge text itself ("Modelled") already carries the
+  // distinction.
+  [ProvenanceKind.MODELLED]:
+    "border-[color:var(--lpmf-green)]/30 bg-[color:var(--lpmf-green)]/5 text-[color:var(--lpmf-green-text)]",
 };
 
 const dotStyles: Record<ProvenanceKind, string> = {
@@ -48,4 +53,5 @@ const dotStyles: Record<ProvenanceKind, string> = {
   [ProvenanceKind.SYNTHETIC]: "bg-[color:var(--lpmf-amber)]",
   [ProvenanceKind.FOREIGN]: "bg-[color:var(--lpmf-muted)]",
   [ProvenanceKind.ILLUSTRATIVE]: "bg-[color:var(--lpmf-muted)]",
+  [ProvenanceKind.MODELLED]: "bg-[color:var(--lpmf-green)]",
 };

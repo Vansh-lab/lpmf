@@ -140,3 +140,32 @@ class LossesResponse(Tagged):
     loss_reduction_pct: float
     is_illustrative: Literal[True]
     at_c_benchmark: AtcBenchmark
+
+
+class TodRates(BaseModel):
+    peak_surcharge_pct: float
+    off_peak_rebate_pct: float
+    order_year: str
+    peak_hours: list[int]
+    off_peak_hours: list[int]
+    note: str
+    provenance: ProvenanceKind
+    source: str
+
+
+class TodBillResponse(Tagged):
+    flat_bill_rupees: float
+    tod_bill_rupees: float
+    savings_rupees: float
+    hourly_cost_rupees: list[float]
+    hourly_kwh: list[float]
+    total_kwh: float
+    shifted_tod_bill_rupees: float = Field(
+        description="ToD bill after shift_fraction of the evening-peak energy moves to off-peak."
+    )
+    shifted_savings_rupees: float = Field(
+        description="tod_bill_rupees - shifted_tod_bill_rupees: what shifting load saves, on top "
+        "of just being on ToD."
+    )
+    is_illustrative: Literal[True]
+    rates: TodRates

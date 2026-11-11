@@ -511,6 +511,80 @@
           }
         }
       }
+    },
+    "/tod": {
+      "get": {
+        "tags": [
+          "tod"
+        ],
+        "summary": "Tod",
+        "operationId": "tod_tod_get",
+        "parameters": [
+          {
+            "name": "total_daily_kwh",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "number",
+              "minimum": 0,
+              "description": "Illustrative household profile.",
+              "default": 10.0,
+              "title": "Total Daily Kwh"
+            },
+            "description": "Illustrative household profile."
+          },
+          {
+            "name": "evening_peak_fraction",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "number",
+              "maximum": 1,
+              "minimum": 0,
+              "description": "Share of the day's kWh used in the 17:00-22:00 peak.",
+              "default": 0.4,
+              "title": "Evening Peak Fraction"
+            },
+            "description": "Share of the day's kWh used in the 17:00-22:00 peak."
+          },
+          {
+            "name": "shift_fraction",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "number",
+              "maximum": 1,
+              "minimum": 0,
+              "description": "Share of that peak energy shifted to off-peak hours.",
+              "default": 0.3,
+              "title": "Shift Fraction"
+            },
+            "description": "Share of that peak energy shifted to off-peak hours."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TodBillResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
     }
   },
   "components": {
@@ -989,7 +1063,8 @@
           "REAL",
           "SYNTHETIC",
           "FOREIGN",
-          "ILLUSTRATIVE"
+          "ILLUSTRATIVE",
+          "MODELLED"
         ],
         "title": "ProvenanceKind",
         "description": "The four provenance kinds. Values are the exact strings persisted to\ndisk (parquet columns, JSON, etc.) and sent over the wire to the web app\n— do not rename without updating both sides of the stack."
@@ -1062,6 +1137,134 @@
           "top_contributors"
         ],
         "title": "ShapSummary"
+      },
+      "TodBillResponse": {
+        "properties": {
+          "provenance": {
+            "$ref": "#/components/schemas/ProvenanceKind"
+          },
+          "source": {
+            "type": "string",
+            "title": "Source"
+          },
+          "flat_bill_rupees": {
+            "type": "number",
+            "title": "Flat Bill Rupees"
+          },
+          "tod_bill_rupees": {
+            "type": "number",
+            "title": "Tod Bill Rupees"
+          },
+          "savings_rupees": {
+            "type": "number",
+            "title": "Savings Rupees"
+          },
+          "hourly_cost_rupees": {
+            "items": {
+              "type": "number"
+            },
+            "type": "array",
+            "title": "Hourly Cost Rupees"
+          },
+          "hourly_kwh": {
+            "items": {
+              "type": "number"
+            },
+            "type": "array",
+            "title": "Hourly Kwh"
+          },
+          "total_kwh": {
+            "type": "number",
+            "title": "Total Kwh"
+          },
+          "shifted_tod_bill_rupees": {
+            "type": "number",
+            "title": "Shifted Tod Bill Rupees",
+            "description": "ToD bill after shift_fraction of the evening-peak energy moves to off-peak."
+          },
+          "shifted_savings_rupees": {
+            "type": "number",
+            "title": "Shifted Savings Rupees",
+            "description": "tod_bill_rupees - shifted_tod_bill_rupees: what shifting load saves, on top of just being on ToD."
+          },
+          "is_illustrative": {
+            "type": "boolean",
+            "const": true,
+            "title": "Is Illustrative"
+          },
+          "rates": {
+            "$ref": "#/components/schemas/TodRates"
+          }
+        },
+        "type": "object",
+        "required": [
+          "provenance",
+          "source",
+          "flat_bill_rupees",
+          "tod_bill_rupees",
+          "savings_rupees",
+          "hourly_cost_rupees",
+          "hourly_kwh",
+          "total_kwh",
+          "shifted_tod_bill_rupees",
+          "shifted_savings_rupees",
+          "is_illustrative",
+          "rates"
+        ],
+        "title": "TodBillResponse"
+      },
+      "TodRates": {
+        "properties": {
+          "peak_surcharge_pct": {
+            "type": "number",
+            "title": "Peak Surcharge Pct"
+          },
+          "off_peak_rebate_pct": {
+            "type": "number",
+            "title": "Off Peak Rebate Pct"
+          },
+          "order_year": {
+            "type": "string",
+            "title": "Order Year"
+          },
+          "peak_hours": {
+            "items": {
+              "type": "integer"
+            },
+            "type": "array",
+            "title": "Peak Hours"
+          },
+          "off_peak_hours": {
+            "items": {
+              "type": "integer"
+            },
+            "type": "array",
+            "title": "Off Peak Hours"
+          },
+          "note": {
+            "type": "string",
+            "title": "Note"
+          },
+          "provenance": {
+            "$ref": "#/components/schemas/ProvenanceKind"
+          },
+          "source": {
+            "type": "string",
+            "title": "Source"
+          }
+        },
+        "type": "object",
+        "required": [
+          "peak_surcharge_pct",
+          "off_peak_rebate_pct",
+          "order_year",
+          "peak_hours",
+          "off_peak_hours",
+          "note",
+          "provenance",
+          "source"
+        ],
+        "title": "TodRates"
       },
       "TransformerResponse": {
         "properties": {

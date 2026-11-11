@@ -157,6 +157,23 @@ export interface paths {
     patch?: never;
     trace?: never;
   };
+  "/tod": {
+    parameters: {
+      query?: never;
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    /** Tod */
+    get: operations["tod_tod_get"];
+    put?: never;
+    post?: never;
+    delete?: never;
+    options?: never;
+    head?: never;
+    patch?: never;
+    trace?: never;
+  };
 }
 export type webhooks = Record<string, never>;
 export interface components {
@@ -368,7 +385,7 @@ export interface components {
      *     — do not rename without updating both sides of the stack.
      * @enum {string}
      */
-    ProvenanceKind: "REAL" | "SYNTHETIC" | "FOREIGN" | "ILLUSTRATIVE";
+    ProvenanceKind: "REAL" | "SYNTHETIC" | "FOREIGN" | "ILLUSTRATIVE" | "MODELLED";
     /** ScatterPoint */
     ScatterPoint: {
       /**
@@ -399,6 +416,58 @@ export interface components {
       day_label: string;
       /** Top Contributors */
       top_contributors: components["schemas"]["ShapContributor"][];
+    };
+    /** TodBillResponse */
+    TodBillResponse: {
+      provenance: components["schemas"]["ProvenanceKind"];
+      /** Source */
+      source: string;
+      /** Flat Bill Rupees */
+      flat_bill_rupees: number;
+      /** Tod Bill Rupees */
+      tod_bill_rupees: number;
+      /** Savings Rupees */
+      savings_rupees: number;
+      /** Hourly Cost Rupees */
+      hourly_cost_rupees: number[];
+      /** Hourly Kwh */
+      hourly_kwh: number[];
+      /** Total Kwh */
+      total_kwh: number;
+      /**
+       * Shifted Tod Bill Rupees
+       * @description ToD bill after shift_fraction of the evening-peak energy moves to off-peak.
+       */
+      shifted_tod_bill_rupees: number;
+      /**
+       * Shifted Savings Rupees
+       * @description tod_bill_rupees - shifted_tod_bill_rupees: what shifting load saves, on top of just being on ToD.
+       */
+      shifted_savings_rupees: number;
+      /**
+       * Is Illustrative
+       * @constant
+       */
+      is_illustrative: true;
+      rates: components["schemas"]["TodRates"];
+    };
+    /** TodRates */
+    TodRates: {
+      /** Peak Surcharge Pct */
+      peak_surcharge_pct: number;
+      /** Off Peak Rebate Pct */
+      off_peak_rebate_pct: number;
+      /** Order Year */
+      order_year: string;
+      /** Peak Hours */
+      peak_hours: number[];
+      /** Off Peak Hours */
+      off_peak_hours: number[];
+      /** Note */
+      note: string;
+      provenance: components["schemas"]["ProvenanceKind"];
+      /** Source */
+      source: string;
     };
     /** TransformerResponse */
     TransformerResponse: {
@@ -725,6 +794,42 @@ export interface operations {
         };
         content: {
           "application/json": components["schemas"]["LossesResponse"];
+        };
+      };
+      /** @description Validation Error */
+      422: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["HTTPValidationError"];
+        };
+      };
+    };
+  };
+  tod_tod_get: {
+    parameters: {
+      query?: {
+        /** @description Illustrative household profile. */
+        total_daily_kwh?: number;
+        /** @description Share of the day's kWh used in the 17:00-22:00 peak. */
+        evening_peak_fraction?: number;
+        /** @description Share of that peak energy shifted to off-peak hours. */
+        shift_fraction?: number;
+      };
+      header?: never;
+      path?: never;
+      cookie?: never;
+    };
+    requestBody?: never;
+    responses: {
+      /** @description Successful Response */
+      200: {
+        headers: {
+          [name: string]: unknown;
+        };
+        content: {
+          "application/json": components["schemas"]["TodBillResponse"];
         };
       };
       /** @description Validation Error */
