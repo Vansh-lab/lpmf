@@ -163,6 +163,30 @@ export function SolarView() {
                 </p>
               </div>
             </Panel>
+
+            {r.real_plant_validation && (
+              <Panel
+                title="Formula validated against a real Indian solar plant"
+                provenance={r.real_plant_validation.provenance}
+                source={r.real_plant_validation.source}
+              >
+                <div className="grid gap-4 md:grid-cols-2">
+                  <KpiCard
+                    label="Plant 1 fit"
+                    value={`r² ${r.real_plant_validation.plant_1.r_squared.toFixed(3)}`}
+                    hint={`MAPE (daytime): ${r.real_plant_validation.plant_1.mape_daytime_pct.toFixed(1)}%`}
+                  />
+                  <KpiCard
+                    label="Plant 2 fit"
+                    value={`r² ${r.real_plant_validation.plant_2.r_squared.toFixed(3)}`}
+                    hint={`MAPE (daytime): ${r.real_plant_validation.plant_2.mape_daytime_pct.toFixed(1)}%`}
+                  />
+                </div>
+                <p className="mt-3 text-xs text-[color:var(--lpmf-muted)]">
+                  {r.real_plant_validation.note}
+                </p>
+              </Panel>
+            )}
           </>
         )}
       </ApiBoundary>

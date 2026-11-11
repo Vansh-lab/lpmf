@@ -669,6 +669,31 @@ export interface components {
       /** Source */
       source: string;
     };
+    /** SolarPlantValidation */
+    SolarPlantValidation: {
+      /** Plant */
+      plant: number;
+      /** N Blocks Merged */
+      n_blocks_merged: number;
+      /** N Daytime Blocks */
+      n_daytime_blocks: number;
+      /** Fitted Capacity X Pr Kw */
+      fitted_capacity_x_pr_kw: number;
+      /** R Squared */
+      r_squared: number;
+      /** Mape Daytime Pct */
+      mape_daytime_pct: number;
+    };
+    /** SolarRealPlantValidation */
+    SolarRealPlantValidation: {
+      plant_1: components["schemas"]["SolarPlantValidation"];
+      plant_2: components["schemas"]["SolarPlantValidation"];
+      provenance: components["schemas"]["ProvenanceKind"];
+      /** Note */
+      note: string;
+      /** Source */
+      source: string;
+    };
     /** SolarResponse */
     SolarResponse: {
       provenance: components["schemas"]["ProvenanceKind"];
@@ -702,6 +727,8 @@ export interface components {
        */
       evening_ramp_mw: number;
       capacity_benchmark: components["schemas"]["SolarCapacityBenchmark"];
+      /** @description r^2/MAPE of this formula against a real Indian solar plant's paired irradiance/power data, if that validation has been run. */
+      real_plant_validation?: components["schemas"]["SolarRealPlantValidation"] | null;
     };
     /** SuspiciousMeter */
     SuspiciousMeter: {

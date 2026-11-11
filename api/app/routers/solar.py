@@ -13,14 +13,18 @@ from fastapi import APIRouter, HTTPException, Query
 from lpmf.engines.solar import (
     DEFAULT_PERFORMANCE_RATIO,
     DELHI_ROOFTOP_CAPACITY_MWP,
+    load_real_plant_validation,
     net_load_mw,
     solar_output_mw,
 )
 
+from app.config import settings
 from app.data import SOURCE_FORECAST, fifteen_min, forecast_dates, forecast_day
-from app.schemas import SolarBlock, SolarCapacityBenchmark, SolarResponse
+from app.schemas import SolarBlock, SolarCapacityBenchmark, SolarRealPlantValidation, SolarResponse
 
 router = APIRouter()
+
+SOLAR_ARTIFACTS_DIR = settings.repo_root / "models" / "artifacts" / "solar"
 
 
 @router.get("", response_model=SolarResponse)
@@ -84,6 +88,11 @@ def solar(
         midday_solar_peak_mw=round(max(b.solar_mw for b in blocks), 2),
         evening_ramp_mw=round(evening_peak - midday_trough, 1),
         capacity_benchmark=SolarCapacityBenchmark(**DELHI_ROOFTOP_CAPACITY_MWP),
+        real_plant_validation=(
+            SolarRealPlantValidation(**validation)
+            if (validation := load_real_plant_validation(SOLAR_ARTIFACTS_DIR))
+            else None
+        ),
         provenance="MODELLED",
         source=f"{SOURCE_FORECAST}; Open-Meteo GHI; modelled solar (PR={performance_ratio})",
     )

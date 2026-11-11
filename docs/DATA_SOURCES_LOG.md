@@ -64,13 +64,20 @@ exists. Every entry below names what was searched, where, and the outcome.
 
 - **Searched:** Kaggle "Solar Power Generation Data" (India, 2 plants) for
   irradiance→power model validation.
-- **Status: blocked** — Kaggle API token (`~/.kaggle/kaggle.json`) was not
-  actually present on this machine despite being believed set up; user is
-  adding it. Will resume once confirmed.
-- Existing page already uses REAL Open-Meteo GHI for Delhi + a FOREIGN
-  rooftop-capacity benchmark; the Kaggle dataset would additionally
-  validate the PVWatts-style formula itself (r², MAPE) against measured
-  plant output before applying it to Delhi.
+- **Resolved (2026-11-11):** same Kaggle token fix as IEX. Downloaded
+  `anikannal/solar-power-generation-data` (2 plants, 22 inverters each,
+  15-min generation + weather sensor data, May-Jun 2020).
+- **Outcome: REAL validation added.** Fit the formula's combined
+  capacity x PR slope by OLS through the origin against each plant's real
+  paired irradiance/power data: **Plant 1 r²=0.9915, MAPE(daytime)=6.34%**
+  (strong — the formula's functional form holds well); **Plant 2
+  r²=0.8215, MAPE(daytime)=36.01%** (notably worse, not independently
+  root-caused here — plausibly inverter downtime or sensor gaps in this
+  public dataset, not necessarily a problem with the formula since Plant 1
+  fits so well). Wired into the Solar & Net Load page as a new FOREIGN
+  "real plant validation" panel, alongside the existing REAL Open-Meteo
+  GHI + MODELLED Delhi-formula output and the FOREIGN rooftop-capacity
+  benchmark, all unchanged.
 
 ## ToD Bill Simulator
 

@@ -15,9 +15,44 @@ voltage effects of distributed generation).
 
 from __future__ import annotations
 
+import json
+from pathlib import Path
+
 import numpy as np
 
 from lpmf.provenance import ProvenanceKind
+
+SOLAR_ARTIFACTS_DIR = Path("models/artifacts/solar")
+
+
+def load_real_plant_validation(artifacts_dir: Path = SOLAR_ARTIFACTS_DIR) -> dict | None:
+    """r^2/MAPE of this page's PVWatts-style formula against real paired
+    irradiance/power data from a real Indian solar plant (Kaggle
+    anikannal/solar-power-generation-data), or None if that validation
+    hasn't been run. FOREIGN: a real plant, but not in Delhi.
+
+    `artifacts_dir` defaults to a path relative to the process's cwd (the
+    repo root) -- callers with a different cwd (e.g. the API, started from
+    `api/`) must pass the resolved path explicitly.
+    """
+    path = artifacts_dir / "validation.json"
+    if not path.exists():
+        return None
+    data = json.loads(path.read_text())
+    return {
+        "plant_1": data["plant_1"],
+        "plant_2": data["plant_2"],
+        "provenance": ProvenanceKind.FOREIGN,
+        "note": (
+            "Real paired irradiance/power data from an Indian solar plant (not Delhi) -- "
+            "validates the formula's functional form before it's applied to Delhi's real "
+            "Open-Meteo GHI. Plant 2's much weaker fit was not independently root-caused here; "
+            "plausibly inverter downtime or sensor gaps in this public dataset, not necessarily "
+            "a problem with the formula itself (Plant 1 fits it very well)."
+        ),
+        "source": data["source"],
+    }
+
 
 # Delhi rooftop solar capacity: MNRE figure via Renewable Watch, ~302 MWp as
 # of March 2025 (of 313.4 MW total solar, excluding large hydro). Sources

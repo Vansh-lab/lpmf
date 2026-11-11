@@ -241,6 +241,18 @@ def test_solar_default_day_has_96_blocks_with_a_daylight_peak():
 
 @needs_15min
 @needs_bands
+def test_solar_includes_real_plant_validation_when_the_pipeline_has_run():
+    body = _get("/solar")
+    validation = body["real_plant_validation"]
+    if validation is None:
+        pytest.skip("models/artifacts/solar/validation.json not present in this environment")
+    assert validation["provenance"] == "FOREIGN"
+    assert 0 <= validation["plant_1"]["r_squared"] <= 1
+    assert validation["plant_1"]["mape_daytime_pct"] >= 0
+
+
+@needs_15min
+@needs_bands
 def test_solar_zero_capacity_means_net_load_equals_load():
     body = _get("/solar?capacity_mwp=0")
     assert all(b["solar_mw"] == 0.0 for b in body["blocks"])

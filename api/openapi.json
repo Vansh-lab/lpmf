@@ -1881,6 +1881,74 @@
         ],
         "title": "SolarCapacityBenchmark"
       },
+      "SolarPlantValidation": {
+        "properties": {
+          "plant": {
+            "type": "integer",
+            "title": "Plant"
+          },
+          "n_blocks_merged": {
+            "type": "integer",
+            "title": "N Blocks Merged"
+          },
+          "n_daytime_blocks": {
+            "type": "integer",
+            "title": "N Daytime Blocks"
+          },
+          "fitted_capacity_x_pr_kw": {
+            "type": "number",
+            "title": "Fitted Capacity X Pr Kw"
+          },
+          "r_squared": {
+            "type": "number",
+            "title": "R Squared"
+          },
+          "mape_daytime_pct": {
+            "type": "number",
+            "title": "Mape Daytime Pct"
+          }
+        },
+        "type": "object",
+        "required": [
+          "plant",
+          "n_blocks_merged",
+          "n_daytime_blocks",
+          "fitted_capacity_x_pr_kw",
+          "r_squared",
+          "mape_daytime_pct"
+        ],
+        "title": "SolarPlantValidation"
+      },
+      "SolarRealPlantValidation": {
+        "properties": {
+          "plant_1": {
+            "$ref": "#/components/schemas/SolarPlantValidation"
+          },
+          "plant_2": {
+            "$ref": "#/components/schemas/SolarPlantValidation"
+          },
+          "provenance": {
+            "$ref": "#/components/schemas/ProvenanceKind"
+          },
+          "note": {
+            "type": "string",
+            "title": "Note"
+          },
+          "source": {
+            "type": "string",
+            "title": "Source"
+          }
+        },
+        "type": "object",
+        "required": [
+          "plant_1",
+          "plant_2",
+          "provenance",
+          "note",
+          "source"
+        ],
+        "title": "SolarRealPlantValidation"
+      },
       "SolarResponse": {
         "properties": {
           "provenance": {
@@ -1934,6 +2002,17 @@
           },
           "capacity_benchmark": {
             "$ref": "#/components/schemas/SolarCapacityBenchmark"
+          },
+          "real_plant_validation": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/SolarRealPlantValidation"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "r^2/MAPE of this formula against a real Indian solar plant's paired irradiance/power data, if that validation has been run."
           }
         },
         "type": "object",

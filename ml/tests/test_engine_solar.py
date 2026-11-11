@@ -5,7 +5,12 @@ from __future__ import annotations
 import numpy as np
 import pytest
 
-from lpmf.engines.solar import DELHI_ROOFTOP_CAPACITY_MWP, net_load_mw, solar_output_mw
+from lpmf.engines.solar import (
+    DELHI_ROOFTOP_CAPACITY_MWP,
+    load_real_plant_validation,
+    net_load_mw,
+    solar_output_mw,
+)
 from lpmf.provenance import ProvenanceKind
 
 
@@ -59,3 +64,24 @@ def test_rooftop_capacity_benchmark_is_tagged_foreign():
     # Public MNRE/Renewable Watch estimate, not a DERC-audited Delhi figure.
     assert DELHI_ROOFTOP_CAPACITY_MWP["provenance"] == ProvenanceKind.FOREIGN
     assert DELHI_ROOFTOP_CAPACITY_MWP["capacity_mwp"] == pytest.approx(302.0)
+
+
+def test_load_real_plant_validation_returns_none_when_artifacts_are_missing(tmp_path):
+    assert load_real_plant_validation(tmp_path / "does-not-exist") is None
+
+
+def test_load_real_plant_validation_loads_and_shapes_the_real_artifact(tmp_path):
+    import json
+
+    data = {
+        "plant_1": {"plant": 1, "r_squared": 0.99, "mape_daytime_pct": 6.3},
+        "plant_2": {"plant": 2, "r_squared": 0.82, "mape_daytime_pct": 36.0},
+        "source": "Kaggle anikannal/solar-power-generation-data",
+    }
+    (tmp_path / "validation.json").write_text(json.dumps(data))
+
+    out = load_real_plant_validation(tmp_path)
+
+    assert out["provenance"] == ProvenanceKind.FOREIGN
+    assert out["plant_1"]["r_squared"] == pytest.approx(0.99)
+    assert out["plant_2"]["mape_daytime_pct"] == pytest.approx(36.0)

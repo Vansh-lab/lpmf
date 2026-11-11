@@ -290,6 +290,23 @@ class SolarBlock(BaseModel):
     net_load_mw: float
 
 
+class SolarPlantValidation(BaseModel):
+    plant: int
+    n_blocks_merged: int
+    n_daytime_blocks: int
+    fitted_capacity_x_pr_kw: float
+    r_squared: float
+    mape_daytime_pct: float
+
+
+class SolarRealPlantValidation(BaseModel):
+    plant_1: SolarPlantValidation
+    plant_2: SolarPlantValidation
+    provenance: ProvenanceKind
+    note: str
+    source: str
+
+
 class SolarResponse(Tagged):
     date: date
     issued_at: datetime
@@ -303,6 +320,11 @@ class SolarResponse(Tagged):
         description="Net load rise from the midday solar trough to the evening peak."
     )
     capacity_benchmark: SolarCapacityBenchmark
+    real_plant_validation: SolarRealPlantValidation | None = Field(
+        default=None,
+        description="r^2/MAPE of this formula against a real Indian solar plant's paired "
+        "irradiance/power data, if that validation has been run.",
+    )
 
 
 class TodBillResponse(Tagged):
