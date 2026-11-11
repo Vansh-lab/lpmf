@@ -103,7 +103,7 @@ def test_load_real_plant_validation_loads_and_shapes_the_real_artifact(tmp_path)
     assert out["diagnostics"]["plant_2_dc_ac_ratio"] == pytest.approx(0.978)
     assert out["diagnostics"]["plant_2_iqr_flagged_inverters"] == []
     assert "weak fit" in out["note"]
-    assert "sensor placement" in out["root_cause_note"]
+    assert "Sensor placement" in out["root_cause_note"]
     assert "clipping" in out["root_cause_note"]
-    assert "shading" in out["root_cause_note"]
-    assert "soiling" in out["root_cause_note"]
+    assert "Soiling/shading" in out["root_cause_note"]
+    assert "Timestamp misalignment" in out["root_cause_note"]
