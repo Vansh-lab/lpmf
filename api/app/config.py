@@ -28,7 +28,18 @@ class Settings(BaseSettings):
 
     @property
     def cors_origin_list(self) -> list[str]:
-        return [o.strip() for o in self.cors_origins.split(",") if o.strip()]
+        origins = [o.strip() for o in self.cors_origins.split(",") if o.strip()]
+        if self.environment == "development":
+            # `next dev` silently falls back to 3001, 3002, ... if 3000 is
+            # already taken (e.g. a stale dev server left running from an
+            # earlier session). Without this, that fallback breaks every
+            # dashboard page with a CORS failure that looks like "API not
+            # reachable" and gives no hint that the port changed.
+            for port in range(3000, 3006):
+                origin = f"http://localhost:{port}"
+                if origin not in origins:
+                    origins.append(origin)
+        return origins
 
 
 settings = Settings()
