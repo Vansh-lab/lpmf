@@ -597,10 +597,6 @@ const LIMITATIONS: { title: string; body: string }[] = [
     title: "The DSM and transformer pages are illustrative calculators.",
     body: "Their outputs are not regulatory figures or measurements.",
   },
-  {
-    title: "Five dashboard items are not built.",
-    body: "07 IEX price, 08 ToD bill, 09 solar & net load, 10 losses & PF and 11 theft & segments are still on the Phase 2 roadmap.",
-  },
 ];
 
 function Limitations() {
