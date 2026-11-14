@@ -1,6 +1,6 @@
 # Final submission checklist
 
-Last verified: 2026-11-14, branch `master`, commit `fa41dc8` (tag `v1.0-final`).
+Last verified: 2026-11-14, branch `master`, commit `bed7171` (tag `v1.0-final`).
 
 ## Automated — done ✅
 
